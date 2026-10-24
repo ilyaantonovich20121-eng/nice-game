@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>3D Action Shooter</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; }
+  #gameCanvas { display: block; width: 100vw; height: 100vh; }
+
+  /* ========= HUD ========= */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+
+  .top-bar {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 18px; align-items: center;
+    background: rgba(0,0,0,0.55); padding: 8px 20px; border-radius: 30px;
+    border: 1px solid rgba(0,255,200,0.35); backdrop-filter: blur(6px);
+  }
+  .stat { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+  .stat .icon { font-size: 18px; }
+  .stat.hp .val { color: #4dff88; }
+  .stat.ammo .val { color: #ffd34d; }
+  .stat.score .val { color: #4dc3ff; }
+  .stat.wave .val { color: #ff6b6b; }
+
+  /* HP bar */
+  #hpbar-wrap {
+    position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+    width: 220px; height: 8px; background: rgba(255,255,255,0.12);
+    border-radius: 4px; overflow: hidden;
+  }
+  #hpbar { height: 100%; width: 100%; background: linear-gradient(90deg,#00ff88,#4dff88); transition: width .2s; }
+
+  /* crosshair */
+  #crosshair {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 26px; height: 26px; opacity: .85;
+  }
+  #crosshair::before, #crosshair::after {
+    content: ''; position: absolute; background: #0ff; box-shadow: 0 0 6px #0ff;
+  }
+  #crosshair::before { left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); }
+  #crosshair::after { top: 50%; left: 0; height: 2px; width: 100%; transform: translateY(-50%); }
+
+  /* ========= Joystick (mobile) ========= */
+  #joystick-zone {
+    position: absolute; bottom: 30px; left: 30px;
+    width: 130px; height: 130px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(0,255,200,0.4);
+    pointer-events: auto; touch-action: none;
+  }
+  #joystick-knob {
+    position: absolute; top: 50%; left: 50%; width: 56px; height: 56px;
+    margin: -28px 0 0 -28px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #0ff, #007a7a);
+    box-shadow: 0 0 15px rgba(0,255,255,0.6);
+  }
+
+  /* fire button */
+  #fire-btn {
+    position: absolute; bottom: 50px; right: 40px;
+    width: 90px; height: 90px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ff6b6b, #b30000);
+    border: 2px solid rgba(255,150,150,0.6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; pointer-events: auto; touch-action: none;
+    box-shadow: 0 0 20px rgba(255,0,0,0.5);
+  }
+  #fire-btn:active { transform: scale(0.93); }
+  #fire-btn.disabled { opacity: .35; }
+
+  /* reload button */
+  #reload-btn {
+    position: absolute; bottom: 155px; right: 55px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(255,210,80,0.15); border: 2px solid rgba(255,210,80,0.6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; pointer-events: auto;
+  }
+
+  /* top-right buttons */
+  #menu-buttons {
+    position: absolute; top: 12px; right: 14px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .mbtn {
+    pointer-events: auto; width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(0,0,0,0.55); border: 1px solid rgba(0,255,200,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer; transition: .15s;
+  }
+  .mbtn:hover { background: rgba(0,255,200,0.15); }
+
+  /* minimap */
+  #minimap {
+    position: absolute; top: 12px; left: 12px;
+    width: 110px; height: 110px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); border: 2px solid rgba(0,255,200,0.4);
+    overflow: hidden;
+  }
+  #minimap canvas { width: 100%; height: 100%; }
+
+  /* ========= Overlays / Panels ========= */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(4,10,14,0.92); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; overflow-y: auto;
+  }
+  .overlay.active { display: flex; }
+
+  .panel {
+    width: 100%; max-width: 720px; background: linear-gradient(160deg, #0e1a22, #0a1218);
+    border: 1px solid rgba(0,255,200,0.35); border-radius: 18px; padding: 26px;
+    box-shadow: 0 0 40px rgba(0,255,200,0.15);
+  }
+  .panel h2 {
+    font-size: 26px; margin-bottom: 6px; color: #0ff;
+    text-shadow: 0 0 15px rgba(0,255,255,0.5); letter-spacing: 1px;
+  }
+  .panel p.sub { color: #7ba; font-size: 13px; margin-bottom: 20px; }
+
+  .btn {
+    display: block; width: 100%; padding: 15px; margin-bottom: 12px;
+    background: linear-gradient(90deg, #003d33, #006655);
+    border: 1px solid rgba(0,255,200,0.4); color: #fff;
+    border-radius: 12px; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: .18s; text-align: center;
+  }
+  .btn:hover { background: linear-gradient(90deg,#005544,#008877); transform: translateY(-1px); }
+  .btn.red { background: linear-gradient(90deg,#4a0d0d,#7a1414); border-color: rgba(255,80,80,0.5); }
+  .btn.red:hover { background: linear-gradient(90deg,#7a1414,#a01e1e); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 12px; }
+
+  /* weapon cards */
+  .wcard {
+    background: rgba(0,255,200,0.06); border: 1px solid rgba(0,255,200,0.25);
+    border-radius: 12px; padding: 14px; text-align: center; cursor: pointer;
+    transition: .18s; position: relative;
+  }
+  .wcard:hover { border-color: #0ff; background: rgba(0,255,200,0.12); }
+  .wcard.equipped { border-color: #0ff; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
+  .wcard .wico { font-size: 34px; margin-bottom: 6px; }
+  .wcard .wname { font-size: 13px; font-weight: 600; }
+  .wcard .wstat { font-size: 11px; color: #7ba; margin-top: 4px; }
+  .wcard .badge { position: absolute; top: 6px; right: 6px; font-size: 10px; color: #0ff; }
+
+  /* cases */
+  .case-box {
+    text-align: center; padding: 20px; border: 1px solid rgba(255,200,0,0.3);
+    border-radius: 14px; background: rgba(255,200,0,0.05); margin-bottom: 16px;
+  }
+  .case-ico { font-size: 60px; margin-bottom: 8px; filter: drop-shadow(0 0 12px rgba(255,200,0,0.6)); }
+
+  /* case opening animation */
+  #case-reel {
+    display: flex; gap: 10px; margin: 20px 0; overflow: hidden;
+    height: 110px; position: relative;
+    border-top: 2px solid rgba(0,255,200,0.4);
+    border-bottom: 2px solid rgba(0,255,200,0.4);
+    padding: 8px 0; align-items: center;
+  }
+  #case-reel-inner { display: flex; gap: 10px; transition: transform 3.5s cubic-bezier(.15,.7,.25,1); }
+  .reel-item {
+    flex: 0 0 90px; height: 90px; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+    font-size: 11px; text-align: center;
+  }
+  .reel-item .ri-ico { font-size: 30px; }
+  .reel-item.rar-common { border-color: #888; }
+  .reel-item.rar-rare { border-color: #4dc3ff; box-shadow: 0 0 10px rgba(77,195,255,0.4); }
+  .reel-item.rar-epic { border-color: #b56bff; box-shadow: 0 0 12px rgba(181,107,255,0.5); }
+  .reel-item.rar-legend { border-color: #ffb84d; box-shadow: 0 0 16px rgba(255,184,77,0.7); }
+  .reel-pointer {
+    position: absolute; top: 0; left: 50%; width: 2px; height: 100%;
+    background: #0ff; box-shadow: 0 0 12px #0ff; transform: translateX(-50%);
+  }
+
+  /* match buttons */
+  .match-opt {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px; border-radius: 12px; margin-bottom: 12px;
+    border: 1px solid rgba(0,255,200,0.3); background: rgba(0,255,200,0.05);
+    cursor: pointer; transition: .18s;
+  }
+  .match-opt:hover { background: rgba(0,255,200,0.12); }
+  .match-opt .mo-name { font-weight: 700; font-size: 16px; }
+  .match-opt .mo-desc { font-size: 12px; color: #7ba; margin-top: 3px; }
+  .match-opt .mo-reward { color: #ffd34d; font-weight: 700; font-size: 14px; }
+
+  /* game over */
+  #gameover-panel h2 { color: #ff4d4d; text-shadow: 0 0 15px rgba(255,0,0,0.6); }
+  .big-num { font-size: 46px; font-weight: 800; color: #0ff; text-align: center; margin: 10px 0; }
+
+  /* toast */
+  #toast {
+    position: fixed; top: 90px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: rgba(0,0,0,0.85); border: 1px solid #0ff; color: #0ff;
+    padding: 10px 22px; border-radius: 30px; font-weight: 600; font-size: 14px;
+    opacity: 0; transition: .3s; z-index: 100; pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* damage flash */
+  #dmg-flash {
+    position: fixed; inset: 0; background: radial-gradient(circle, transparent 40%, rgba(255,0,0,0.5));
+    opacity: 0; pointer-events: none; z-index: 20; transition: opacity .15s;
+  }
+
+  @media (min-width: 900px) {
+    #joystick-zone, #fire-btn, #reload-btn { display: none; }
+    #desktop-hint { display: block; }
+  }
+  #desktop-hint {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #7ba; background: rgba(0,0,0,0.5);
+    padding: 6px 16px; border-radius: 20px; display: none;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<!-- ===================== HUD ===================== -->
+<div id="hud">
+  <div id="minimap"><canvas id="minimap-canvas" width="110" height="110"></canvas></div>
+
+  <div class="top-bar">
+    <div class="stat hp"><span class="icon">❤️</span><span class="val" id="hp-val">100</span></div>
+    <div class="stat ammo"><span class="icon">🔫</span><span class="val" id="ammo-val">12/12</span></div>
+    <div class="stat score"><span class="icon">⭐</span><span class="val" id="score-val">0</span></div>
+    <div class="stat wave"><span class="icon">🌊</span><span class="val" id="wave-val">0/0</span></div>
+  </div>
+  <div id="hpbar-wrap"><div id="hpbar"></div></div>
+  <div id="crosshair"></div>
+
+  <div id="menu-buttons">
+    <div class="mbtn" id="btn-inventory">🎒</div>
+    <div class="mbtn" id="btn-cases">📦</div>
+    <div class="mbtn" id="btn-matches">🎯</div>
+    <div class="mbtn" id="btn-pause">⏸️</div>
+  </div>
+
+  <div id="joystick-zone"><div id="joystick-knob"></div></div>
+  <div id="fire-btn">🔥</div>
+  <div id="reload-btn">🔄</div>
+  <div id="desktop-hint">WASD — движение · Мышь — прицел · ЛКМ — огонь · R — перезарядка</div>
+</div>
+
+<div id="dmg-flash"></div>
+<div id="toast"></div>
+
+<!-- ===================== INVENTORY ===================== -->
+<div class="overlay" id="inventory-overlay">
+  <div class="panel">
+    <h2>🎒 ИНВЕНТАРЬ</h2>
+    <p class="sub">Выбери оружие — нажми на карточку</p>
+    <div class="grid" id="inventory-grid"></div>
+    <div style="height:16px"></div>
+    <button class="btn" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<!-- ===================== CASES ===================== -->
+<div class="overlay" id="cases-overlay">
+  <div class="panel">
+    <h2>📦 КЕЙСЫ</h2>
+    <p class="sub">Открывай кейсы и получай новое оружие. Баланс монет: <b id="coins-val">0</b> 🪙</p>
+
+    <div id="cases-list">
+      <div class="case-box">
+        <div class="case-ico">📦</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px">Обычный кейс</div>
+        <div style="font-size:12px;color:#7ba;margin-bottom:12px">Шанс редкого оружия: 25%</div>
+        <button class="btn" onclick="Game.openCase('common')">ОТКРЫТЬ — 100 🪙</button>
+      </div>
+      <div class="case-box" style="border-color:rgba(181,107,255,0.4);background:rgba(181,107,255,0.06)">
+        <div class="case-ico" style="filter:drop-shadow(0 0 12px rgba(181,107,255,0.7))">🎁</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px">Эпический кейс</div>
+        <div style="font-size:12px;color:#7ba;margin-bottom:12px">Шанс эпик/легенда: 40%</div>
+        <button class="btn" onclick="Game.openCase('epic')" style="background:linear-gradient(90deg,#3a1a5c,#5c2a8a)">ОТКРЫТЬ — 300 🪙</button>
+      </div>
+    </div>
+
+    <div id="case-reel" style="display:none">
+      <div class="reel-pointer"></div>
+      <div id="case-reel-inner"></div>
+    </div>
+
+    <button class="btn" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<!-- ===================== MATCHES ===================== -->
+<div class="overlay" id="matches-overlay">
+  <div class="panel">
+    <h2>🎯 МАТЧИ</h2>
+    <p class="sub">Выбери режим — каждый матч это волны врагов</p>
+
+    <div class="match-opt" onclick="Game.startMatch('easy')">
+      <div>
+        <div class="mo-name">🟢 Тренировка</div>
+        <div class="mo-desc">3 волны · слабые враги · обучение</div>
+      </div>
+      <div class="mo-reward">+50 🪙</div>
+    </div>
+    <div class="match-opt" onclick="Game.startMatch('normal')">
+      <div>
+        <div class="mo-name">🟡 Обычный бой</div>
+        <div class="mo-desc">5 волн · средние враги</div>
+      </div>
+      <div class="mo-reward">+150 🪙</div>
+    </div>
+    <div class="match-opt" onclick="Game.startMatch('hard')">
+      <div>
+        <div class="mo-name">🔴 Элитный отряд</div>
+        <div class="mo-desc">7 волн · сильные враги · босс</div>
+      </div>
+      <div class="mo-reward">+400 🪙</div>
+    </div>
+    <div class="match-opt" onclick="Game.startMatch('endless')">
+      <div>
+        <div class="mo-name">♾️ Бесконечный режим</div>
+        <div class="mo-desc">Волны без конца · рекорд по счёту</div>
+      </div>
+      <div class="mo-reward">+10 🪙 / волна</div>
+    </div>
+
+    <button class="btn red" onclick="Game.closeAll()">НАЗАД</button>
+  </div>
+</div>
+
+<!-- ===================== PAUSE ===================== -->
+<div class="overlay" id="pause-overlay">
+  <div class="panel" style="max-width:400px">
+    <h2>⏸️ ПАУЗА</h2>
+    <p class="sub">Игра приостановлена</p>
+    <button class="btn" onclick="Game.resume()">ПРОДОЛЖИТЬ</button>
+    <button class="btn red" onclick="Game.quitToMenu()">ВЫЙТИ В МЕНЮ</button>
+  </div>
+</div>
+
+<!-- ===================== GAME OVER ===================== -->
+<div class="overlay" id="gameover-overlay">
+  <div class="panel" id="gameover-panel" style="max-width:440px;text-align:center">
+    <h2>☠️ ВЫ ПОГИБЛИ</h2>
+    <p class="sub">Матч окончен</p>
+    <div class="big-num" id="final-score">0</div>
+    <p class="sub" style="margin-bottom:16px">Очки за матч</p>
+    <div style="font-size:15px;margin-bottom:20px;color:#ffd34d">Награда: <b id="reward-val">0</b> 🪙</div>
+    <button class="btn" onclick="Game.restartMatch()">ИГРАТЬ СНОВА</button>
+    <button class="btn red" onclick="Game.quitToMenu()">В МЕНЮ</button>
+  </div>
+</div>
+
+<!-- ===================== START SCREEN ===================== -->
+<div class="overlay active" id="start-overlay">
+  <div class="panel" style="max-width:480px;text-align:center">
+    <h2 style="font-size:32px">⚡ 3D ACTION SHOOTER</h2>
+    <p class="sub">Симулятор бойца · стреляй · выживай · прокачивайся</p>
+    <button class="btn" onclick="Game.showMenu()">ИГРАТЬ</button>
+    <button class="btn" onclick="Game.openCasesFromStart()">📦 ОТКРЫТЬ КЕЙС</button>
+    <p class="sub" style="margin-top:14px;font-size:12px">
+      Управление: WASD / джойстик · Мышь или 🔥 — стрельба · R — перезарядка · 🎒 — инвентарь
+    </p>
+  </div>
+</div>
+
+<!-- MAIN MENU -->
+<div class="overlay" id="menu-overlay">
+  <div class="panel" style="max-width:420px;text-align:center">
+    <h2>ГЛАВНОЕ МЕНЮ</h2>
+    <p class="sub">Выбери действие</p>
+    <button class="btn" onclick="Game.showMenuPanel('matches')">🎯 НАЧАТЬ МАТЧ</button>
+    <button class="btn" onclick="Game.showMenuPanel('inventory')">🎒 ИНВЕНТАРЬ</button>
+    <button class="btn" onclick="Game.showMenuPanel('cases')">📦 КЕЙСЫ</button>
+    <div style="margin-top:10px;font-size:13px;color:#7ba">
+      🪙 Монеты: <b id="menu-coins" style="color:#ffd34d">0</b> &nbsp;·&nbsp; 🏆 Рекорд: <b style="color:#0ff" id="menu-highscore">0</b>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =============================================================
+   🎮 3D ACTION SHOOTER — полный движок на Three.js
+   ============================================================= */
+const Game = (() => {
+  'use strict';
+
+  // ---------- THREE core ----------
+  let scene, camera, renderer, clock;
+  let player, playerModel, playerGun;
+  let enemies = [], bullets = [], enemyBullets = [], particles = [];
+  let ground, walls = [];
+  let raycaster;
+
+  // ---------- Game state ----------
+  const state = {
+    running: false,
+    paused: false,
+    over: false,
+    hp: 100,
+    maxHp: 100,
+    score: 0,
+    coins: 0,
+    highscore: 0,
+    wave: 0,
+    totalWaves: 0,
+    mode: 'normal',
+    enemiesAlive: 0,
+    enemiesKilled: 0,
+    spawnTimer: 0,
+    enemiesToSpawn: 0,
+    killGoalThisWave: 0,
+    invulnerable: false,
+    lastFire: 0,
+    reloading: false,
+    reloadTimer: 0,
+    reward: 0
+  };
+
+  // ---------- Weapons ----------
+  const WEAPONS = {
+    pistol:   { id:'pistol',   name:'Пистолет',   icon:'🔫', dmg:18, fireRate:320, mag:12, reload:1100, spread:0.012, color:0x4dc3ff, auto:false, owned:true },
+    smg:      { id:'smg',      name:'ПП «Штурм»', icon:'🔫', dmg:11, fireRate:95,  mag:30, reload:1500, spread:0.035, color:0xffd34d, auto:true,  owned:false },
+    rifle:    { id:'rifle',    name:'Автомат',    icon:'🔫', dmg:26, fireRate:170, mag:25, reload:1700, spread:0.02,  color:0xff6b6b, auto:true,  owned:false },
+    shotgun:  { id:'shotgun',  name:'Дробовик',   icon:'💥', dmg:55, fireRate:750, mag:6,  reload:2100, spread:0.09,  color:0xb56bff, auto:false, pellets:6, owned:false },
+    sniper:   { id:'sniper',   name:'Снайперка',  icon:'🎯', dmg:110,fireRate:1100,mag:5,  reload:2400, spread:0.001, color:0x00ffaa, auto:false, owned:false },
+    minigun:  { id:'minigun',  name:'Миниган',    icon:'⚙️', dmg:9,  fireRate:55,  mag:100,reload:3200, spread:0.05,  color:0xff8800, auto:true,  owned:false }
+  };
+  let currentWeaponId = 'pistol';
+  let ammoInMag = 12;
+
+  // ---------- Input ----------
+  const keys = {};
+  const move = new THREE.Vector2(0,0); // x = strafe, y = forward
+  const joy = { active:false, dx:0, dy:0, id:null, baseX:0, baseY:0 };
+  const look = { yaw: 0, pitch: 0 };
+  let firing = false;
+  let pointerLocked = false;
+
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+
+  // ---------- Utils ----------
+  const rand = (a,b) => a + Math.random()*(b-a);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+  const dist2D = (a,b) => Math.hypot(a.x-b.x, a.z-b.z);
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  // =============================================================
+  //  INIT THREE
+  // =============================================================
+  function initThree() {
+    const canvas = $('gameCanvas');
+    renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a1218);
+    scene.fog = new THREE.Fog(0x0a1218, 30, 90);
+
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 500);
+
+    clock = new THREE.Clock();
+    raycaster = new THREE.Raycaster();
+
+    // Lights
+    const hemi = new THREE.HemisphereLight(0x88bbff, 0x101820, 0.9);
+    scene.add(hemi);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.
