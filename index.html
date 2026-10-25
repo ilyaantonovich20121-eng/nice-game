@@ -4,50 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>2D Action Shooter</title>
+<meta name="mobile-web-app-capable" content="yes">
+<title>Mobile Shooter</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-  body { overflow: hidden; background: #0a1218; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; touch-action: none; }
+  /* Полный сброс стилей для мобилок */
+  * { 
+    margin: 0; padding: 0; box-sizing: border-box; 
+    user-select: none; -webkit-user-select: none; 
+    -webkit-tap-highlight-color: transparent; 
+    touch-action: none; /* Запрет зума и скролла */
+  }
+  body, html { width: 100%; height: 100%; overflow: hidden; background: #0a1218; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; }
   #gameCanvas { display: block; width: 100vw; height: 100vh; }
 
-  /* ========= HUD ========= */
+  /* HUD */
   #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; display: none; }
   .top-bar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.7); padding: 6px 16px; border-radius: 30px; border: 1px solid rgba(0,255,200,0.4); }
   .stat { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; }
   .hp-val { color: #4dff88; } .ammo-val { color: #ffd34d; } .coins-val { color: #ffd34d; } .wave-val { color: #ff6b6b; }
-  
   #hpbar-wrap { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); width: 150px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; }
   #hpbar { height: 100%; width: 100%; background: #4dff88; transition: width 0.1s; }
 
-  /* ========= Joystick & Buttons ========= */
-  #joystick-zone { position: absolute; bottom: 25px; left: 25px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(0,255,200,0.5); pointer-events: auto; touch-action: none; }
-  #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; margin: -25px 0 0 -25px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #0ff, #007a7a); box-shadow: 0 0 15px rgba(0,255,255,0.7); }
+  /* Сенсорное управление */
+  #joystick-zone { 
+    position: absolute; bottom: 25px; left: 25px; width: 130px; height: 130px; 
+    border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(0,255,200,0.5); 
+    pointer-events: auto; touch-action: none; 
+  }
+  #joystick-knob { 
+    position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; 
+    border-radius: 50%; background: radial-gradient(circle at 35% 35%, #0ff, #007a7a); 
+    box-shadow: 0 0 15px rgba(0,255,255,0.7); pointer-events: none;
+  }
   
-  #fire-btn { position: absolute; bottom: 35px; right: 30px; width: 85px; height: 85px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff6b6b, #b30000); border: 2px solid rgba(255,150,150,0.8); display: flex; align-items: center; justify-content: center; font-size: 30px; pointer-events: auto; touch-action: none; }
-  #fire-btn:active { transform: scale(0.9); }
-  #reload-btn { position: absolute; bottom: 135px; right: 45px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,210,80,0.2); border: 2px solid rgba(255,210,80,0.8); display: flex; align-items: center; justify-content: center; font-size: 22px; pointer-events: auto; }
+  /* Огромные кнопки для пальцев */
+  #fire-btn { 
+    position: absolute; bottom: 35px; right: 30px; width: 90px; height: 90px; border-radius: 50%; 
+    background: radial-gradient(circle at 35% 35%, #ff6b6b, #b30000); 
+    border: 3px solid rgba(255,150,150,0.8); display: flex; align-items: center; justify-content: center; 
+    font-size: 32px; pointer-events: auto; touch-action: none; 
+  }
+  #fire-btn:active { transform: scale(0.9); background: #ff2222; }
+  
+  #reload-btn { 
+    position: absolute; bottom: 145px; right: 45px; width: 60px; height: 60px; border-radius: 50%; 
+    background: rgba(255,210,80,0.2); border: 3px solid rgba(255,210,80,0.8); 
+    display: flex; align-items: center; justify-content: center; font-size: 26px; pointer-events: auto; touch-action: none; 
+  }
 
-  #menu-buttons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 8px; }
-  .mbtn { pointer-events: auto; width: 46px; height: 46px; border-radius: 12px; background: rgba(0,0,0,0.7); border: 1px solid rgba(0,255,200,0.5); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; }
+  #menu-buttons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .mbtn { pointer-events: auto; width: 50px; height: 50px; border-radius: 12px; background: rgba(0,0,0,0.7); border: 2px solid rgba(0,255,200,0.5); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; touch-action: manipulation; }
   .mbtn:active { background: rgba(0,255,200,0.3); }
 
-  /* ========= Overlays ========= */
+  /* Оверлеи */
   .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(4,10,14,0.95); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
   .overlay.active { display: flex; }
-  .panel { width: 100%; max-width: 500px; background: linear-gradient(160deg, #0e1a22, #0a1218); border: 1px solid rgba(0,255,200,0.4); border-radius: 16px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+  .panel { width: 100%; max-width: 500px; background: linear-gradient(160deg, #0e1a22, #0a1218); border: 1px solid rgba(0,255,200,0.4); border-radius: 16px; padding: 20px; max-height: 90vh; overflow-y: auto; touch-action: pan-y; }
   .panel h2 { font-size: 22px; margin-bottom: 10px; color: #0ff; text-align: center; }
   
   /* Кнопки */
-  .btn { display: block; width: 100%; padding: 16px; margin-bottom: 10px; background: linear-gradient(90deg, #003d33, #006655); border: 1px solid rgba(0,255,200,0.5); color: #fff; border-radius: 12px; font-size: 16px; font-weight: 700; text-align: center; cursor: pointer; pointer-events: auto; text-decoration: none; border: none; outline: none; }
+  .btn { 
+    display: block; width: 100%; padding: 18px; margin-bottom: 12px; 
+    background: linear-gradient(90deg, #003d33, #006655); border: 1px solid rgba(0,255,200,0.5); 
+    color: #fff; border-radius: 12px; font-size: 18px; font-weight: 700; text-align: center; 
+    cursor: pointer; pointer-events: auto; text-decoration: none; border: none; outline: none; 
+    touch-action: manipulation; /* Ускоряет тапы */
+  }
   .btn:active { background: #008877; transform: scale(0.98); }
   .btn.red { background: linear-gradient(90deg,#4a0d0d,#7a1414); border-color: rgba(255,80,80,0.6); }
 
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .wcard { background: rgba(0,255,200,0.08); border: 1px solid rgba(0,255,200,0.3); border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; pointer-events: auto; }
+  .wcard { background: rgba(0,255,200,0.08); border: 1px solid rgba(0,255,200,0.3); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; pointer-events: auto; touch-action: manipulation; }
   .wcard.equipped { border-color: #0ff; background: rgba(0,255,200,0.2); }
-  .wcard .wico { font-size: 28px; margin-bottom: 4px; }
-  .wcard .wname { font-size: 13px; font-weight: 700; }
-  .wcard .wstat { font-size: 11px; color: #8cb; margin-top: 2px; }
+  .wcard .wico { font-size: 32px; margin-bottom: 4px; }
+  .wcard .wname { font-size: 15px; font-weight: 700; }
+  .wcard .wstat { font-size: 12px; color: #8cb; margin-top: 2px; }
   .wcard.locked { opacity: 0.5; }
 
   .case-box { text-align: center; padding: 15px; border: 1px solid rgba(255,200,0,0.4); border-radius: 12px; background: rgba(255,200,0,0.08); margin-bottom: 12px; }
@@ -59,7 +90,7 @@
   .reel-item .ri-ico { font-size: 26px; }
   .reel-pointer { position: absolute; top: 0; left: 50%; width: 2px; height: 100%; background: #0ff; box-shadow: 0 0 10px #0ff; transform: translateX(-50%); z-index: 2; }
 
-  #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px); background: rgba(0,0,0,0.9); border: 1px solid #0ff; color: #0ff; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 13px; opacity: 0; transition: .3s; z-index: 100; pointer-events: none; text-align: center; }
+  #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px); background: rgba(0,0,0,0.9); border: 1px solid #0ff; color: #0ff; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 14px; opacity: 0; transition: .3s; z-index: 100; pointer-events: none; text-align: center; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
@@ -77,14 +108,14 @@
   <div id="hpbar-wrap"><div id="hpbar"></div></div>
 
   <div id="menu-buttons">
-    <div class="mbtn" onclick="Game.openInventory()">🎒</div>
-    <div class="mbtn" onclick="Game.openCases()">📦</div>
-    <div class="mbtn" onclick="Game.pauseGame()">⏸️</div>
+    <div class="mbtn" id="btn-open-inv">🎒</div>
+    <div class="mbtn" id="btn-open-cases">📦</div>
+    <div class="mbtn" id="btn-pause">⏸️</div>
   </div>
 
   <div id="joystick-zone"><div id="joystick-knob"></div></div>
   <div id="fire-btn">🔥</div>
-  <div id="reload-btn" onclick="Game.reload()">🔄</div>
+  <div id="reload-btn" id="btn-reload">🔄</div>
 </div>
 
 <div id="toast"></div>
@@ -92,12 +123,12 @@
 <!-- СТАРТОВЫЙ ЭКРАН -->
 <div class="overlay active" id="start-overlay">
   <div class="panel" style="text-align:center">
-    <h2 style="font-size:26px">⚡ 2D ACTION SHOOTER</h2>
-    <p style="color:#7ba;font-size:13px;margin-bottom:20px">Вид сверху · Выживание</p>
+    <h2 style="font-size:26px">⚡ МОБИЛЬНЫЙ ШУТЕР</h2>
+    <p style="color:#7ba;font-size:13px;margin-bottom:20px">Только для сенсорных экранов</p>
     
-    <button class="btn" onclick="Game.startFirstMatch()" style="background:#00b377;color:#000;font-size:18px">▶ НАЧАТЬ ИГРУ</button>
-    <button class="btn" onclick="Game.openCases()">📦 КЕЙСЫ</button>
-    <button class="btn" onclick="Game.openInventory()">🎒 ИНВЕНТАРЬ</button>
+    <button class="btn" id="btn-start">▶ НАЧАТЬ ИГРУ</button>
+    <button class="btn" id="btn-start-cases">📦 КЕЙСЫ</button>
+    <button class="btn" id="btn-start-inv">🎒 ИНВЕНТАРЬ</button>
   </div>
 </div>
 
@@ -107,7 +138,7 @@
     <h2>🎒 ИНВЕНТАРЬ</h2>
     <div class="grid" id="inventory-grid"></div>
     <div style="height:12px"></div>
-    <button class="btn red" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
+    <button class="btn red" id="btn-close-inv">ЗАКРЫТЬ</button>
   </div>
 </div>
 
@@ -119,18 +150,18 @@
     <div class="case-box">
       <div class="case-ico">📦</div>
       <div style="font-size:16px;font-weight:700;margin-bottom:10px">Обычный кейс</div>
-      <button class="btn" onclick="Game.openCase('common')">ОТКРЫТЬ — 100 🪙</button>
+      <button class="btn" id="btn-open-common">ОТКРЫТЬ — 100 🪙</button>
     </div>
     <div class="case-box" style="border-color:rgba(181,107,255,0.5);background:rgba(181,107,255,0.1)">
       <div class="case-ico">🎁</div>
       <div style="font-size:16px;font-weight:700;margin-bottom:10px">Эпический кейс</div>
-      <button class="btn" onclick="Game.openCase('epic')" style="background:#5c2a8a">ОТКРЫТЬ — 300 🪙</button>
+      <button class="btn" id="btn-open-epic" style="background:#5c2a8a">ОТКРЫТЬ — 300 🪙</button>
     </div>
     <div id="case-reel" style="display:none">
       <div class="reel-pointer"></div>
       <div id="case-reel-inner"></div>
     </div>
-    <button class="btn red" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
+    <button class="btn red" id="btn-close-cases">ЗАКРЫТЬ</button>
   </div>
 </div>
 
@@ -140,8 +171,8 @@
     <h2 id="go-title">☠️ ВЫ ПОГИБЛИ</h2>
     <div style="font-size:40px;font-weight:800;color:#0ff;margin:10px 0" id="final-score">0</div>
     <div style="font-size:15px;margin-bottom:15px;color:#ffd34d">Награда: <b id="reward-val">0</b> 🪙</div>
-    <button class="btn" onclick="Game.restartMatch()">ИГРАТЬ СНОВА</button>
-    <button class="btn red" onclick="Game.showMenu()">В МЕНЮ</button>
+    <button class="btn" id="btn-restart">ИГРАТЬ СНОВА</button>
+    <button class="btn red" id="btn-go-menu">В МЕНЮ</button>
   </div>
 </div>
 
@@ -149,14 +180,14 @@
 <div class="overlay" id="pause-overlay">
   <div class="panel" style="max-width:350px;text-align:center">
     <h2>⏸️ ПАУЗА</h2>
-    <button class="btn" onclick="Game.resume()">ПРОДОЛЖИТЬ</button>
-    <button class="btn red" onclick="Game.showMenu()">В МЕНЮ</button>
+    <button class="btn" id="btn-resume">ПРОДОЛЖИТЬ</button>
+    <button class="btn red" id="btn-pause-menu">В МЕНЮ</button>
   </div>
 </div>
 
 <script>
-const Game = (() => {
-  'use strict';
+// Оборачиваем всё в window.onload, чтобы DOM точно загрузился
+window.onload = function() {
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   let W, H;
@@ -184,7 +215,6 @@ const Game = (() => {
   let camX = 0, camY = 0;
   
   const joy = { active:false, dx:0, dy:0, id:null, baseX:0, baseY:0 };
-  const keys = {};
   let firing = false;
   
   const $ = id => document.getElementById(id);
@@ -215,7 +245,7 @@ const Game = (() => {
 
   function spawnEnemy() {
     const angle = rand(0, Math.PI*2);
-    const dist = rand(400, 600); // спавн далеко за экраном
+    const dist = rand(400, 600);
     enemies.push({
       x: player.x + Math.cos(angle)*dist,
       y: player.y + Math.sin(angle)*dist,
@@ -262,7 +292,7 @@ const Game = (() => {
     if (state.hp <= 0) { state.hp = 0; endMatch(false); }
   }
 
-  const MATCH_MODES = { easy: { waves:3, coins:50 }, normal: { waves:5, coins:150 } };
+  const MATCH_MODES = { easy: { waves:3, coins:50 } };
 
   function startMatch(mode) {
     closeAll();
@@ -299,16 +329,9 @@ const Game = (() => {
   function update(dt) {
     if (!state.running || state.paused || state.over) return;
 
-    let mx = 0, my = 0;
-    if (keys['w'] || keys['arrowup']) my -= 1;
-    if (keys['s'] || keys['arrowdown']) my += 1;
-    if (keys['a'] || keys['arrowleft']) mx -= 1;
-    if (keys['d'] || keys['arrowright']) mx += 1;
-    mx += joy.dx; my += joy.dy;
-    
+    let mx = joy.dx, my = joy.dy;
     const len = Math.hypot(mx, my);
-    if (len > 0) {
-      mx /= len; my /= len;
+    if (len > 0.1) {
       player.x += mx * player.speed * (dt * 60);
       player.y += my * player.speed * (dt * 60);
       const targetAngle = Math.atan2(my, mx);
@@ -383,7 +406,6 @@ const Game = (() => {
     camX = player.x - W/2;
     camY = player.y - H/2;
 
-    // Сетка
     ctx.strokeStyle = 'rgba(0,255,200,0.05)';
     ctx.lineWidth = 1;
     const gSize = 50;
@@ -399,7 +421,6 @@ const Game = (() => {
     ctx.save();
     ctx.translate(-camX, -camY);
 
-    // Враги
     for (const en of enemies) {
       if (en.dead) continue;
       ctx.fillStyle = '#ff4444';
@@ -408,7 +429,6 @@ const Game = (() => {
       ctx.fillStyle = '#ff2222'; ctx.fillRect(en.x - 20, en.y - 30, 40 * (en.hp/en.maxHp), 5);
     }
 
-    // Игрок
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.angle);
@@ -418,13 +438,11 @@ const Game = (() => {
     ctx.fillRect(10, -5, 20, 10);
     ctx.restore();
 
-    // Пули
     for (const b of bullets) {
       ctx.fillStyle = b.color;
       ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, 7); ctx.fill();
     }
 
-    // Частицы
     for (let i=particles.length-1; i>=0; i--) {
       const p = particles[i];
       p.life -= 0.016;
@@ -447,8 +465,12 @@ const Game = (() => {
     draw();
   }
 
-  function bindInput() {
-    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key.toLowerCase()==='r') reload(); });
-    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
-
-    const joyZone = $(
+  // --- СЕНСОРНОЕ УПРАВЛЕНИЕ ---
+  const joyZone = $('joystick-zone'), joyKnob = $('joystick-knob'), joyR = 50;
+  
+  joyZone.addEventListener('touchstart', e => {
+    e.preventDefault(); 
+    const t = e.changedTouches[0]; 
+    joy.active = true; joy.id = t.identifier;
+    const r = joyZone.getBoundingClientRect(); 
+    joy.baseX = r.left + r.width/2
