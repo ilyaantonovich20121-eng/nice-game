@@ -4,17 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <title>Mobile Shooter</title>
 <style>
-  /* Полный сброс стилей для мобилок */
-  * { 
-    margin: 0; padding: 0; box-sizing: border-box; 
-    user-select: none; -webkit-user-select: none; 
-    -webkit-tap-highlight-color: transparent; 
-    touch-action: none; /* Запрет зума и скролла */
-  }
-  body, html { width: 100%; height: 100%; overflow: hidden; background: #0a1218; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body, html { width: 100%; height: 100%; overflow: hidden; background: #0a1218; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; touch-action: manipulation; }
   #gameCanvas { display: block; width: 100vw; height: 100vh; }
 
   /* HUD */
@@ -26,31 +19,13 @@
   #hpbar { height: 100%; width: 100%; background: #4dff88; transition: width 0.1s; }
 
   /* Сенсорное управление */
-  #joystick-zone { 
-    position: absolute; bottom: 25px; left: 25px; width: 130px; height: 130px; 
-    border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(0,255,200,0.5); 
-    pointer-events: auto; touch-action: none; 
-  }
-  #joystick-knob { 
-    position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; 
-    border-radius: 50%; background: radial-gradient(circle at 35% 35%, #0ff, #007a7a); 
-    box-shadow: 0 0 15px rgba(0,255,255,0.7); pointer-events: none;
-  }
+  #joystick-zone { position: absolute; bottom: 25px; left: 25px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(0,255,200,0.5); pointer-events: auto; touch-action: none; }
+  #joystick-knob { position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #0ff, #007a7a); box-shadow: 0 0 15px rgba(0,255,255,0.7); pointer-events: none; }
   
-  /* Огромные кнопки для пальцев */
-  #fire-btn { 
-    position: absolute; bottom: 35px; right: 30px; width: 90px; height: 90px; border-radius: 50%; 
-    background: radial-gradient(circle at 35% 35%, #ff6b6b, #b30000); 
-    border: 3px solid rgba(255,150,150,0.8); display: flex; align-items: center; justify-content: center; 
-    font-size: 32px; pointer-events: auto; touch-action: none; 
-  }
+  #fire-btn { position: absolute; bottom: 35px; right: 30px; width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff6b6b, #b30000); border: 3px solid rgba(255,150,150,0.8); display: flex; align-items: center; justify-content: center; font-size: 32px; pointer-events: auto; touch-action: none; }
   #fire-btn:active { transform: scale(0.9); background: #ff2222; }
   
-  #reload-btn { 
-    position: absolute; bottom: 145px; right: 45px; width: 60px; height: 60px; border-radius: 50%; 
-    background: rgba(255,210,80,0.2); border: 3px solid rgba(255,210,80,0.8); 
-    display: flex; align-items: center; justify-content: center; font-size: 26px; pointer-events: auto; touch-action: none; 
-  }
+  #reload-btn { position: absolute; bottom: 145px; right: 45px; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,210,80,0.2); border: 3px solid rgba(255,210,80,0.8); display: flex; align-items: center; justify-content: center; font-size: 26px; pointer-events: auto; touch-action: manipulation; }
 
   #menu-buttons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 10px; }
   .mbtn { pointer-events: auto; width: 50px; height: 50px; border-radius: 12px; background: rgba(0,0,0,0.7); border: 2px solid rgba(0,255,200,0.5); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; touch-action: manipulation; }
@@ -63,13 +38,7 @@
   .panel h2 { font-size: 22px; margin-bottom: 10px; color: #0ff; text-align: center; }
   
   /* Кнопки */
-  .btn { 
-    display: block; width: 100%; padding: 18px; margin-bottom: 12px; 
-    background: linear-gradient(90deg, #003d33, #006655); border: 1px solid rgba(0,255,200,0.5); 
-    color: #fff; border-radius: 12px; font-size: 18px; font-weight: 700; text-align: center; 
-    cursor: pointer; pointer-events: auto; text-decoration: none; border: none; outline: none; 
-    touch-action: manipulation; /* Ускоряет тапы */
-  }
+  .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; background: linear-gradient(90deg, #003d33, #006655); border: 1px solid rgba(0,255,200,0.5); color: #fff; border-radius: 12px; font-size: 18px; font-weight: 700; text-align: center; cursor: pointer; pointer-events: auto; text-decoration: none; border: none; outline: none; touch-action: manipulation; }
   .btn:active { background: #008877; transform: scale(0.98); }
   .btn.red { background: linear-gradient(90deg,#4a0d0d,#7a1414); border-color: rgba(255,80,80,0.6); }
 
@@ -108,14 +77,14 @@
   <div id="hpbar-wrap"><div id="hpbar"></div></div>
 
   <div id="menu-buttons">
-    <div class="mbtn" id="btn-open-inv">🎒</div>
-    <div class="mbtn" id="btn-open-cases">📦</div>
-    <div class="mbtn" id="btn-pause">⏸️</div>
+    <div class="mbtn" onclick="Game.openInventory()">🎒</div>
+    <div class="mbtn" onclick="Game.openCases()">📦</div>
+    <div class="mbtn" onclick="Game.pauseGame()">⏸️</div>
   </div>
 
   <div id="joystick-zone"><div id="joystick-knob"></div></div>
   <div id="fire-btn">🔥</div>
-  <div id="reload-btn" id="btn-reload">🔄</div>
+  <div id="reload-btn" onclick="Game.reload()">🔄</div>
 </div>
 
 <div id="toast"></div>
@@ -124,11 +93,14 @@
 <div class="overlay active" id="start-overlay">
   <div class="panel" style="text-align:center">
     <h2 style="font-size:26px">⚡ МОБИЛЬНЫЙ ШУТЕР</h2>
-    <p style="color:#7ba;font-size:13px;margin-bottom:20px">Только для сенсорных экранов</p>
+    <p style="color:#7ba;font-size:13px;margin-bottom:20px">Проверка связи</p>
     
-    <button class="btn" id="btn-start">▶ НАЧАТЬ ИГРУ</button>
-    <button class="btn" id="btn-start-cases">📦 КЕЙСЫ</button>
-    <button class="btn" id="btn-start-inv">🎒 ИНВЕНТАРЬ</button>
+    <button class="btn" onclick="Game.startFirstMatch()" style="background:#00b377;color:#000;font-size:18px">▶ НАЧАТЬ ИГРУ</button>
+    <button class="btn" onclick="Game.openCases()">📦 КЕЙСЫ</button>
+    <button class="btn" onclick="Game.openInventory()">🎒 ИНВЕНТАРЬ</button>
+    
+    <!-- ТЕСТОВАЯ КНОПКА -->
+    <button onclick="alert('УРА! КНОПКИ РАБОТАЮТ!')" style="margin-top:20px;background:#ff2222;color:#fff;padding:15px;border-radius:10px;border:none;font-size:16px;width:100%;touch-action:manipulation;">🔴 НАЖМИ ДЛЯ ТЕСТА</button>
   </div>
 </div>
 
@@ -138,7 +110,7 @@
     <h2>🎒 ИНВЕНТАРЬ</h2>
     <div class="grid" id="inventory-grid"></div>
     <div style="height:12px"></div>
-    <button class="btn red" id="btn-close-inv">ЗАКРЫТЬ</button>
+    <button class="btn red" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
   </div>
 </div>
 
@@ -150,18 +122,18 @@
     <div class="case-box">
       <div class="case-ico">📦</div>
       <div style="font-size:16px;font-weight:700;margin-bottom:10px">Обычный кейс</div>
-      <button class="btn" id="btn-open-common">ОТКРЫТЬ — 100 🪙</button>
+      <button class="btn" onclick="Game.openCase('common')">ОТКРЫТЬ — 100 🪙</button>
     </div>
     <div class="case-box" style="border-color:rgba(181,107,255,0.5);background:rgba(181,107,255,0.1)">
       <div class="case-ico">🎁</div>
       <div style="font-size:16px;font-weight:700;margin-bottom:10px">Эпический кейс</div>
-      <button class="btn" id="btn-open-epic" style="background:#5c2a8a">ОТКРЫТЬ — 300 🪙</button>
+      <button class="btn" onclick="Game.openCase('epic')" style="background:#5c2a8a">ОТКРЫТЬ — 300 🪙</button>
     </div>
     <div id="case-reel" style="display:none">
       <div class="reel-pointer"></div>
       <div id="case-reel-inner"></div>
     </div>
-    <button class="btn red" id="btn-close-cases">ЗАКРЫТЬ</button>
+    <button class="btn red" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
   </div>
 </div>
 
@@ -171,8 +143,8 @@
     <h2 id="go-title">☠️ ВЫ ПОГИБЛИ</h2>
     <div style="font-size:40px;font-weight:800;color:#0ff;margin:10px 0" id="final-score">0</div>
     <div style="font-size:15px;margin-bottom:15px;color:#ffd34d">Награда: <b id="reward-val">0</b> 🪙</div>
-    <button class="btn" id="btn-restart">ИГРАТЬ СНОВА</button>
-    <button class="btn red" id="btn-go-menu">В МЕНЮ</button>
+    <button class="btn" onclick="Game.restartMatch()">ИГРАТЬ СНОВА</button>
+    <button class="btn red" onclick="Game.showMenu()">В МЕНЮ</button>
   </div>
 </div>
 
@@ -180,14 +152,14 @@
 <div class="overlay" id="pause-overlay">
   <div class="panel" style="max-width:350px;text-align:center">
     <h2>⏸️ ПАУЗА</h2>
-    <button class="btn" id="btn-resume">ПРОДОЛЖИТЬ</button>
-    <button class="btn red" id="btn-pause-menu">В МЕНЮ</button>
+    <button class="btn" onclick="Game.resume()">ПРОДОЛЖИТЬ</button>
+    <button class="btn red" onclick="Game.showMenu()">В МЕНЮ</button>
   </div>
 </div>
 
 <script>
-// Оборачиваем всё в window.onload, чтобы DOM точно загрузился
-window.onload = function() {
+const Game = (() => {
+  'use strict';
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   let W, H;
@@ -471,6 +443,4 @@ window.onload = function() {
   joyZone.addEventListener('touchstart', e => {
     e.preventDefault(); 
     const t = e.changedTouches[0]; 
-    joy.active = true; joy.id = t.identifier;
-    const r = joyZone.getBoundingClientRect(); 
-    joy.baseX = r.left + r.width/2 
+    joy.act
