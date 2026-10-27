@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Roof Parkour 2D</title>
+    <title>Stickman Roof Run 2D</title>
     <style>
         * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
         body { background: #0b0c10; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
@@ -49,7 +49,7 @@
             <div id="hud-coins" class="hud-coins">Монеты: 0 🪙</div>
         </div>
 
-        <!-- ГЛАВНОЕ МЕНЮ И РАБОЧИЙ МАГАЗИН -->
+        <!-- ГЛАВНОЕ МЕНЮ И МАГАЗИН -->
         <div id="screen-menu" class="screen">
             <h1>Stickman Roof Run</h1>
             <div style="font-size: 18px; font-weight: bold;" class="hud-coins">Кошелек: <span id="shop-wallet">0</span> 🪙</div>
@@ -65,7 +65,6 @@
                 </div>
             </div>
 
-            <!-- Кнопка СТАРТ со встроенной командой активации -->
             <button id="btn-start" class="menu-btn" onclick="triggerStart()">Начать игру</button>
         </div>
 
@@ -76,7 +75,7 @@
             <button id="btn-restart" class="menu-btn" onclick="triggerResetMenu()">В меню</button>
         </div>
 
-        <!-- КНОПКИ УПРАВЛЕНИЯ С ПРЯМЫМИ КОМАНДАМИ НАЖАТИЯ -->
+        <!-- КНОПКИ УПРАВЛЕНИЯ -->
         <div id="touch-controls">
             <div class="control-group">
                 <div class="action-btn" onclick="executeJump()">Вверх</div>
@@ -89,12 +88,87 @@
     </div>
 
 <script>
+// Глобальное объявление функций, чтобы Chrome видел их сразу
+window.triggerStart = function() {
+    document.getElementById('screen-menu').classList.add('hidden');
+    document.getElementById('screen-over').classList.add('hidden');
+    gameActive = true;
+    distanceScore = 0;
+    obstacles = [];
+    projectiles = [];
+    currentSpeed = 5.5;
+    stickman.y = roofHeight - stickman.h;
+    stickman.jumping = false;
+    stickman.sliding = false;
+    requestAnimationFrame(coreEngineLoop);
+};
+
+window.triggerResetMenu = function() {
+    document.getElementById('screen-over').classList.add('hidden');
+    document.getElementById('screen-menu').classList.remove('hidden');
+    syncShopUI();
+};
+
+window.executeJump = function() {
+    if (!stickman.jumping && !stickman.sliding && gameActive) {
+        stickman.vy = stickman.jForce;
+        stickman.jumping = true;
+    }
+};
+
+window.executeSlide = function() {
+    if (!stickman.jumping && !stickman.sliding && gameActive) {
+        stickman.sliding = true;
+        stickman.h = 32;
+        stickman.y += 33;
+        stickman.slideFrames = 38;
+    }
+};
+
+window.executeAttack = function() {
+    if (stickman.attacking || !gameActive) return;
+    stickman.attacking = true;
+    stickman.attackFrames = 12;
+
+    let wepInfo = shopConfig.weapons.find(w => w.id === selectedWeapon);
+    if (wepInfo && wepInfo.type === 'range') {
+        projectiles.push({
+            x: stickman.x + stickman.w,
+            y: stickman.y + stickman.h / 2 - 2,
+            speed: 14
+        });
+    }
+};
+
+window.buyOrEquipItem = function(type, id) {
+    if (type === 'skin') {
+        let item = shopConfig.skins.find(s => s.id === id);
+        if (shopConfig.unlockedSkins.includes(id)) {
+            selectedSkin = id;
+        } else if (coinBalance >= item.price) {
+            coinBalance -= item.price;
+            shopConfig.unlockedSkins.push(id);
+            selectedSkin = id;
+        }
+    } else if (type === 'weapon') {
+        let item = shopConfig.weapons.find(w => w.id === id);
+        if (shopConfig.unlockedWeapons.includes(id)) {
+            selectedWeapon = id;
+        } else if (coinBalance >= item.price) {
+            coinBalance -= item.price;
+            shopConfig.unlockedWeapons.push(id);
+            selectedWeapon = id;
+        }
+    }
+    syncShopUI();
+};
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 let gameActive = false;
 let distanceScore = 0;
-let coinBalance = 200; // Монеты для покупки скинов в меню
+let coinBalance = 200; 
 let selectedSkin = 'classic';
 let selectedWeapon = 'none';
 
@@ -147,37 +221,6 @@ function renderEnvironment() {
     ctx.fillRect(0, roofHeight, canvas.width, 4);
 }
 
-function executeJump() {
-    if (!stickman.jumping && !stickman.sliding && gameActive) {
-        stickman.vy = stickman.jForce;
-        stickman.jumping = true;
-    }
-}
-
-function executeSlide() {
-    if (!stickman.jumping && !stickman.sliding && gameActive) {
-        stickman.sliding = true;
-        stickman.h = 32;
-        stickman.y += 33;
-        stickman.slideFrames = 38;
-    }
-}
-
-function executeAttack() {
-    if (stickman.attacking || !gameActive) return;
-    stickman.attacking = true;
-    stickman.attackFrames = 12;
-
-    let wepInfo = shopConfig.weapons.find(w => w.id === selectedWeapon);
-    if (wepInfo && wepInfo.type === 'range') {
-        projectiles.push({
-            x: stickman.x + stickman.w,
-            y: stickman.y + stickman.h / 2 - 2,
-            speed: 14
-        });
-    }
-}
-
 function processPlayerPhysics() {
     if (stickman.sliding) {
         stickman.slideFrames--;
@@ -204,33 +247,3 @@ function processPlayerPhysics() {
 }
 
 function drawStickman() {
-    let skin = shopConfig.skins.find(s => s.id === selectedSkin);
-    ctx.strokeStyle = skin.color;
-    ctx.lineWidth = 4.5;
-    ctx.lineCap = 'round';
-
-    let cx = stickman.x + stickman.w / 2;
-    let cy = stickman.y;
-
-    if (stickman.sliding) {
-        ctx.beginPath(); ctx.arc(cx + 12, cy + 12, 7, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx - 15, cy + 22); ctx.lineTo(cx + 10, cy + 22); ctx.stroke();
-    } else {
-        ctx.beginPath(); ctx.arc(cx, cy + 12, 8, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx, cy + 20); ctx.lineTo(cx, cy + 42); ctx.stroke();
-        
-        let wave = Math.sin(Date.now() * 0.015) * 14;
-        let handY = cy + 26 + (stickman.jumping ? -12 : wave);
-        ctx.beginPath(); ctx.moveTo(cx, cy + 24); ctx.lineTo(cx + 16, handY); ctx.stroke();
-
-        if (selectedWeapon !== 'none') {
-            ctx.save();
-            if (selectedWeapon === 'sword') {
-                ctx.strokeStyle = '#f1f2f6';
-                ctx.lineWidth = 3;
-                ctx.translate(cx + 14, handY);
-                ctx.rotate(-Math.PI / 3 + (stickman.attacking ? Math.PI / 1.5 : 0));
-                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(30, -5); ctx.stroke();
-            } else if (selectedWeapon === 'blaster') {
-                ctx.fillStyle = '#54a0ff';
-                ctx.fillRect(cx + 14, handY - 4, 15, 7);
