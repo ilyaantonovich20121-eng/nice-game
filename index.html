@@ -11,34 +11,30 @@
         #game-wrapper { position: relative; width: 800px; height: 400px; border: 4px solid #1f2833; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         canvas { display: block; width: 100%; height: 100%; background: linear-gradient(to bottom, #0b0c10, #1f2833); }
         
-        /* Верхний интерфейс */
         .hud { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; font-size: 20px; font-weight: bold; font-family: monospace; z-index: 2; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         .hud-coins { color: #66fcf1; }
         
-        /* Экраны меню */
-        .screen { position: absolute; inset: 0; background: rgba(11, 12, 16, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 30px; }
+        .screen { position: absolute; inset: 0; background: rgba(11, 12, 16, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 30px; pointer-events: auto; }
         .hidden { display: none !important; }
         h1 { font-size: 36px; margin-bottom: 10px; color: #66fcf1; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 10px rgba(102, 252, 241, 0.3); }
         
-        .menu-btn { padding: 14px 30px; font-size: 20px; font-weight: bold; background: #66fcf1; border: none; border-radius: 6px; cursor: pointer; color: #0b0c10; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(102, 252, 241, 0.2); }
+        .menu-btn { padding: 14px 30px; font-size: 20px; font-weight: bold; background: #66fcf1; border: none; border-radius: 6px; cursor: pointer; color: #0b0c10; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(102, 252, 241, 0.2); pointer-events: auto; }
         .menu-btn:hover { transform: translateY(-2px); background: #45a29e; box-shadow: 0 6px 20px rgba(102, 252, 241, 0.4); }
         .menu-btn:active { transform: translateY(1px); }
 
-        /* Магазин */
-        .shop-box { display: flex; gap: 20px; width: 100%; max-width: 680px; margin: 20px 0; }
+        .shop-box { display: flex; gap: 20px; width: 100%; max-width: 680px; margin: 20px 0; pointer-events: auto; }
         .shop-column { flex: 1; background: #1f2833; padding: 15px; border-radius: 8px; border: 1px solid #45a29e; height: 180px; overflow-y: auto; }
         .shop-column h3 { font-size: 16px; margin-bottom: 12px; text-align: center; color: #66fcf1; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(102,252,241,0.2); padding-bottom: 5px; }
         .shop-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #0b0c10; margin-bottom: 8px; border-radius: 6px; font-size: 14px; border: 1px solid transparent; }
         .shop-item.active-item { border-color: #66fcf1; }
-        .shop-item button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #45a29e; color: #fff; transition: 0.1s; }
+        .shop-item button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #45a29e; color: #fff; transition: 0.1s; pointer-events: auto; }
         .shop-item button:hover { background: #66fcf1; color: #0b0c10; }
         .shop-item button.eq { background: #ff4757; color: #fff; }
         .shop-item button.own { background: #2ed573; color: #fff; }
 
-        /* Кнопки мобильного/наземного управления */
         #touch-controls { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; z-index: 5; }
         .control-group { display: flex; gap: 20px; pointer-events: auto; }
-        .action-btn { width: 75px; height: 75px; border-radius: 50%; background: rgba(31, 40, 51, 0.7); border: 2px solid #45a29e; color: #66fcf1; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .action-btn { width: 75px; height: 75px; border-radius: 50%; background: rgba(31, 40, 51, 0.85); border: 2px solid #45a29e; color: #66fcf1; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.1s; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: auto; touch-action: manipulation; }
         .action-btn:active { background: #66fcf1; color: #0b0c10; border-color: #66fcf1; transform: scale(0.92); }
         #btn-attack { border-color: #ff4757; color: #ff4757; }
         #btn-attack:active { background: #ff4757; color: #fff; border-color: #ff4757; }
@@ -49,24 +45,20 @@
     <div id="game-wrapper">
         <canvas id="canvas" width="800" height="400"></canvas>
         
-        <!-- ХУД игры -->
         <div class="hud">
             <div id="hud-score">Дистанция: 0м</div>
             <div id="hud-coins" class="hud-coins">Монеты: 0 🪙</div>
         </div>
 
-        <!-- Экран Меню / Магазина -->
         <div id="screen-menu" class="screen">
             <h1>Stickman Roof Run</h1>
             <div style="font-size: 18px; font-weight: bold;" class="hud-coins">Кошелек: <span id="shop-wallet">0</span> 🪙</div>
             
             <div class="shop-box">
-                <!-- Скины -->
                 <div class="shop-column">
                     <h3>Костюмы</h3>
                     <div id="container-skins"></div>
                 </div>
-                <!-- Оружие -->
                 <div class="shop-column">
                     <h3>Оружейная</h3>
                     <div id="container-weapons"></div>
@@ -76,14 +68,12 @@
             <button id="btn-start" class="menu-btn">Начать игру</button>
         </div>
 
-        <!-- Экран Проигрыша -->
         <div id="screen-over" class="screen hidden">
             <h1 style="color: #ff4757;">Забег окончен</h1>
             <p id="over-stats" style="margin-bottom: 25px; font-size: 20px; color: #c1c8e4;"></p>
             <button id="btn-restart" class="menu-btn">В меню</button>
         </div>
 
-        <!-- Интерактивный пульт кнопок -->
         <div id="touch-controls">
             <div class="control-group">
                 <div class="action-btn" id="btn-jump">Вверх</div>
@@ -99,14 +89,12 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-// Глобальное состояние
 let gameActive = false;
 let distanceScore = 0;
-let coinBalance = 150; // Стартовый баланс для мгновенных тестов магазина
+let coinBalance = 150; 
 let selectedSkin = 'classic';
 let selectedWeapon = 'none';
 
-// Конфиг магазина
 const shopConfig = {
     skins: [
         { id: 'classic', name: 'Обычный', price: 0, color: '#ffffff', detailColor: '#888888' },
@@ -123,7 +111,6 @@ const shopConfig = {
     unlockedWeapons: ['none']
 };
 
-// Параметры главного героя
 let stickman = {
     x: 120, y: 240, w: 30, h: 65,
     vy: 0, g: 0.65, jForce: -13.5,
@@ -131,7 +118,6 @@ let stickman = {
     attacking: false, attackFrames: 0
 };
 
-// Списки динамических сущностей
 let obstacles = [];
 let projectiles = [];
 let VFXParticles = [];
@@ -139,38 +125,30 @@ let currentSpeed = 5.5;
 let spawnCooldown = 0;
 let roofHeight = 310;
 
-// Отрисовка детализированного бэкграунда крыш
 function renderEnvironment() {
-    // Градиент неба
     let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
     skyGrad.addColorStop(0, '#0f0c20');
     skyGrad.addColorStop(1, '#151930');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Дальние неоновые сетки/здания
     ctx.fillStyle = '#1b1f38';
     ctx.fillRect(80, 130, 140, 270);
     ctx.fillRect(320, 90, 210, 310);
     ctx.fillRect(610, 160, 130, 240);
 
-    // Световые окна на дальних зданиях
     ctx.fillStyle = 'rgba(102, 252, 241, 0.15)';
     ctx.fillRect(110, 160, 20, 30);
     ctx.fillRect(360, 120, 30, 40);
     ctx.fillRect(440, 150, 30, 40);
 
-    // Поверхность крыши
     ctx.fillStyle = '#242b4d';
     ctx.fillRect(0, roofHeight, canvas.width, canvas.height - roofHeight);
     
-    // Неоновая линия края крыши
     ctx.fillStyle = '#66fcf1';
     ctx.fillRect(0, roofHeight, canvas.width, 4);
-    ctx.shadowBlur = 0;
 }
 
-// Функции управления
 function executeJump() {
     if (!stickman.jumping && !stickman.sliding && gameActive) {
         stickman.vy = stickman.jForce;
@@ -183,7 +161,7 @@ function executeSlide() {
         stickman.sliding = true;
         stickman.h = 32;
         stickman.y += 33;
-        stickman.slideFrames = 38; // Время скольжения
+        stickman.slideFrames = 38;
     }
 }
 
@@ -202,7 +180,6 @@ function executeAttack() {
     }
 }
 
-// Обновление состояния персонажа
 function processPlayerPhysics() {
     if (stickman.sliding) {
         stickman.slideFrames--;
@@ -228,3 +205,23 @@ function processPlayerPhysics() {
     }
 }
 
+function drawStickman() {
+    let skin = shopConfig.skins.find(s => s.id === selectedSkin);
+    ctx.strokeStyle = skin.color;
+    ctx.lineWidth = 4.5;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = selectedSkin === 'cyber' ? 8 : 0;
+    ctx.shadowColor = skin.color;
+
+    let cx = stickman.x + stickman.w / 2;
+    let cy = stickman.y;
+
+    if (stickman.sliding) {
+        ctx.beginPath();
+        ctx.arc(cx + 12, cy + 12, 7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx - 15, cy + 22);
+        ctx.lineTo(cx + 10, cy + 22);
+        ctx.stroke();
+    } else {
