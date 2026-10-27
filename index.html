@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Roof Run 2D Pro</title>
+    <title>Stickman Roof Run 2D Definitive</title>
     <style>
         * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
-        body { background: #0b0c10; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
+        body { background: #0b0c10; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
         
-        #game-wrapper { position: relative; width: 100%; max-width: 800px; height: 400px; border: 4px solid #1f2833; border-radius: 12px; overflow: hidden; background: #0f0c20; box-shadow: 0 0 30px rgba(102, 252, 241, 0.2); }
+        #game-wrapper { position: relative; width: 100%; max-width: 800px; height: 400px; border: 4px solid #1f2833; border-radius: 12px; overflow: hidden; background: #0a0813; box-shadow: 0 0 30px rgba(102, 252, 241, 0.2); }
         canvas { display: block; width: 100%; height: 100%; }
         
         .hud { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; font-size: 18px; font-weight: bold; font-family: monospace; z-index: 5; text-shadow: 2px 2px 4px #000; }
@@ -38,70 +38,6 @@
         #btn-attack { border-color: #ff4757; color: #ff4757; }
         #btn-attack:active { background: #ff4757; color: #fff; }
     </style>
-    
-    <!-- КРИТИЧЕСКИЙ СКРИПТ: Загружается ПЕРВЫМ, чтобы функции гарантированно существовали в памяти -->
-    <script>
-        window.gameActive = false;
-        window.distanceScore = 0;
-        window.coinBalance = parseInt(localStorage.getItem('parkour_coins')) || 0;
-        window.selectedSkin = localStorage.getItem('parkour_skin') || 'classic';
-        window.selectedWeapon = localStorage.getItem('parkour_weapon') || 'none';
-
-        window.triggerStart = function() {
-            const menu = document.getElementById('screen-menu');
-            const over = document.getElementById('screen-over');
-            if(menu) menu.classList.add('hidden');
-            if(over) over.classList.add('hidden');
-            
-            window.gameActive = true;
-            window.distanceScore = 0;
-            window.obstacles = [];
-            window.projectiles = [];
-            window.currentSpeed = 5.5;
-            window.stickman.y = window.roofHeight - window.stickman.h;
-            window.stickman.jumping = false;
-            window.stickman.sliding = false;
-            requestAnimationFrame(window.coreEngineLoop);
-        };
-
-        window.triggerResetMenu = function() {
-            document.getElementById('screen-over').classList.add('hidden');
-            document.getElementById('screen-menu').classList.remove('hidden');
-            window.syncShopUI();
-        };
-
-        window.executeJump = function() {
-            if (!window.stickman.jumping && !window.stickman.sliding && window.gameActive) {
-                window.stickman.vy = window.stickman.jForce;
-                window.stickman.jumping = true;
-                window.spawnDust(window.stickman.x + 15, window.roofHeight, '#66fcf1');
-            }
-        };
-
-        window.executeSlide = function() {
-            if (!window.stickman.jumping && !window.stickman.sliding && window.gameActive) {
-                window.stickman.sliding = true;
-                window.stickman.h = 32;
-                window.stickman.y += 33;
-                window.stickman.slideFrames = 38;
-            }
-        };
-
-        window.executeAttack = function() {
-            if (window.stickman.attacking || !window.gameActive) return;
-            window.stickman.attacking = true;
-            window.stickman.attackFrames = 12;
-
-            let wepInfo = window.shopConfig.weapons.find(w => w.id === window.selectedWeapon);
-            if (wepInfo && wepInfo.type === 'range') {
-                window.projectiles.push({
-                    x: window.stickman.x + window.stickman.w,
-                    y: window.stickman.y + window.stickman.h / 2 - 2,
-                    speed: 14
-                });
-            }
-        };
-    </script>
 </head>
 <body>
 
@@ -113,10 +49,10 @@
             <div id="hud-coins" class="hud-coins">Монеты: 0 🪙</div>
         </div>
 
-        <!-- ГЛАВНОЕ МЕНЮ И МАГАЗИН -->
+        <!-- МЕНЮ И МАГАЗИН -->
         <div id="screen-menu" class="screen">
             <h1>Stickman Roof Run</h1>
-            <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" class="hud-coins">Ваш кошелек: <span id="shop-wallet">0</span> 🪙</div>
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" class="hud-coins">Кошелек: <span id="shop-wallet">0</span> 🪙</div>
             
             <div class="shop-box">
                 <div class="shop-column">
@@ -132,14 +68,14 @@
             <button id="btn-start" class="menu-btn" onclick="window.triggerStart()">Начать игру</button>
         </div>
 
-        <!-- ЭКРАН ПРОИГРЫША -->
+        <!-- КОНЕЦ ИГРЫ -->
         <div id="screen-over" class="screen hidden">
             <h1 style="color: #ff4757;">Забег окончен</h1>
             <p id="over-stats" style="margin-bottom: 20px; font-size: 18px; color: #c1c8e4;"></p>
             <button id="btn-restart" class="menu-btn" onclick="window.triggerResetMenu()">В меню</button>
         </div>
 
-        <!-- КНОПКИ УПРАВЛЕНИЯ -->
+        <!-- ИГРОВЫЕ КНОПКИ -->
         <div id="touch-controls">
             <div class="control-group">
                 <div class="action-btn" onclick="window.executeJump()">Вверх</div>
@@ -152,21 +88,31 @@
     </div>
 
 <script>
-// Основной движок игры
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+// Глобальная инициализация переменных до загрузки логики интерфейса
+window.gameActive = false;
+window.distanceScore = 0;
+window.coinBalance = parseInt(localStorage.getItem('parkour_coins')) || 250; // Даем 250 монет для тестов магазина
+window.selectedSkin = localStorage.getItem('parkour_skin') || 'classic';
+window.selectedWeapon = localStorage.getItem('parkour_weapon') || 'none';
+
+window.obstacles = [];
+window.projectiles = [];
+window.VFXParticles = [];
+window.currentSpeed = 5.5;
+window.spawnCooldown = 0;
+window.roofHeight = 310;
 
 window.shopConfig = {
     skins: [
         { id: 'classic', name: 'Обычный', price: 0, color: '#ffffff' },
-        { id: 'phantom', name: 'Фантом', price: 30, color: '#ff4757' },
-        { id: 'cyber', name: 'Кибер Неон', price: 60, color: '#00d2d3' },
-        { id: 'elite', name: 'Золотой', price: 120, color: '#ffa502' }
+        { id: 'phantom', name: 'Фантом', price: 40, color: '#ff4757' },
+        { id: 'cyber', name: 'Кибер', price: 80, color: '#00d2d3' },
+        { id: 'elite', name: 'Легенда', price: 150, color: '#ffa502' }
     ],
     weapons: [
         { id: 'none', name: 'Кулаки', price: 0, type: 'melee' },
-        { id: 'sword', name: 'Катана', price: 25, type: 'melee' },
-        { id: 'blaster', name: 'Лазер', price: 70, type: 'range' }
+        { id: 'sword', name: 'Катана', price: 30, type: 'melee' },
+        { id: 'blaster', name: 'Бластер', price: 75, type: 'range' }
     ],
     unlockedSkins: JSON.parse(localStorage.getItem('parkour_unlocked_skins')) || ['classic'],
     unlockedWeapons: JSON.parse(localStorage.getItem('parkour_unlocked_weapons')) || ['none']
@@ -179,12 +125,71 @@ window.stickman = {
     attacking: false, attackFrames: 0
 };
 
-window.obstacles = [];
-window.projectiles = [];
-window.VFXParticles = [];
-window.currentSpeed = 5.5;
-window.spawnCooldown = 0;
-window.roofHeight = 310;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// ПРЯМЫЕ ГЛОБАЛЬНЫЕ ФУНКЦИИ УПРАВЛЕНИЯ И ЖИЗНЕННОГО ЦИКЛА
+window.triggerStart = function() {
+    document.getElementById('screen-menu').classList.add('hidden');
+    document.getElementById('screen-over').classList.add('hidden');
+    
+    window.obstacles = [];
+    window.projectiles = [];
+    window.VFXParticles = [];
+    window.distanceScore = 0;
+    window.currentSpeed = 5.5;
+    window.spawnCooldown = 0;
+    
+    window.stickman.h = 65;
+    window.stickman.y = window.roofHeight - window.stickman.h;
+    window.stickman.vy = 0;
+    window.stickman.jumping = false;
+    window.stickman.sliding = false;
+    window.stickman.attacking = false;
+    
+    window.gameActive = true;
+};
+
+window.triggerResetMenu = function() {
+    window.gameActive = false;
+    document.getElementById('screen-over').classList.add('hidden');
+    document.getElementById('screen-menu').classList.remove('hidden');
+    window.syncShopUI();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    renderEnvironment();
+};
+
+window.executeJump = function() {
+    if (window.gameActive && !window.stickman.jumping && !window.stickman.sliding) {
+        window.stickman.vy = window.stickman.jForce;
+        window.stickman.jumping = true;
+        window.spawnDust(window.stickman.x + 15, window.roofHeight, '#66fcf1');
+    }
+};
+
+window.executeSlide = function() {
+    if (window.gameActive && !window.stickman.jumping && !window.stickman.sliding) {
+        window.stickman.sliding = true;
+        window.stickman.h = 32;
+        window.stickman.y += 33;
+        window.stickman.slideFrames = 38;
+    }
+};
+
+window.executeAttack = function() {
+    if (!window.gameActive || window.stickman.attacking) return;
+    window.stickman.attacking = true;
+    window.stickman.attackFrames = 12;
+
+    let wepInfo = window.shopConfig.weapons.find(w => w.id === window.selectedWeapon);
+    if (wepInfo && wepInfo.type === 'range') {
+        window.projectiles.push({
+            x: window.stickman.x + window.stickman.w,
+            y: window.stickman.y + window.stickman.h / 2,
+            speed: 13
+        });
+    }
+};
 
 function renderEnvironment() {
     let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -193,12 +198,20 @@ function renderEnvironment() {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Здания на фоне с улучшенными неоновыми окнами
     ctx.fillStyle = '#161829';
     ctx.fillRect(60, 110, 150, 290);
     ctx.fillRect(300, 80, 220, 320);
     ctx.fillRect(620, 140, 140, 260);
 
-    ctx.fillStyle = 'rgba(102, 252, 241, 0.2)';
-    ctx.fillRect(90, 140, 20, 30);
-    ctx.fillRect(340, 120, 30, 40);
+    ctx.fillStyle = '#1e223d';
+    ctx.fillRect(0, window.roofHeight, canvas.width, canvas.height - window.roofHeight);
+    
+    ctx.fillStyle = '#66fcf1';
+    ctx.fillRect(0, window.roofHeight, canvas.width, 4);
+}
+
+function processPlayerPhysics() {
+    if (window.stickman.sliding) {
+        window.stickman.slideFrames--;
+        if (Math.random() < 0.3) window.spawnDust(window.stickman.x, window.roofHeight, 'rgba(255,255,255,0.3)');
+        if (window.stickman.slideFrames <= 0) {
