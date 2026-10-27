@@ -3,41 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Roof Run 2D</title>
+    <title>Stickman Roof Run 2D Pro</title>
     <style>
         * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
-        body { background: #0b0c10; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
+        body { background: #0b0c10; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
         
-        #game-wrapper { position: relative; width: 800px; height: 400px; border: 4px solid #1f2833; border-radius: 12px; overflow: hidden; background: #111; }
+        #game-wrapper { position: relative; width: 100%; max-width: 800px; height: 400px; border: 4px solid #1f2833; border-radius: 12px; overflow: hidden; background: #0f0c20; box-shadow: 0 0 30px rgba(102, 252, 241, 0.2); }
         canvas { display: block; width: 100%; height: 100%; }
         
-        .hud { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; font-size: 20px; font-weight: bold; font-family: monospace; z-index: 5; text-shadow: 2px 2px 4px #000; }
+        .hud { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; font-size: 18px; font-weight: bold; font-family: monospace; z-index: 5; text-shadow: 2px 2px 4px #000; }
         .hud-coins { color: #66fcf1; }
         
-        .screen { position: absolute; inset: 0; background: rgba(11, 12, 16, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 30px; }
+        .screen { position: absolute; inset: 0; background: rgba(11, 12, 16, 0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 25px; }
         .hidden { display: none !important; }
-        h1 { font-size: 36px; margin-bottom: 10px; color: #66fcf1; text-transform: uppercase; letter-spacing: 3px; }
+        h1 { font-size: 38px; margin-bottom: 5px; color: #66fcf1; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px rgba(102,252,241,0.4); }
         
-        .menu-btn { padding: 14px 30px; font-size: 20px; font-weight: bold; background: #66fcf1; border: none; border-radius: 6px; cursor: pointer; color: #0b0c10; text-transform: uppercase; }
-        .menu-btn:hover { background: #45a29e; }
+        .menu-btn { padding: 12px 35px; font-size: 18px; font-weight: bold; background: #66fcf1; border: none; border-radius: 6px; cursor: pointer; color: #0b0c10; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
+        .menu-btn:hover { background: #45a29e; transform: scale(1.03); }
 
-        .shop-box { display: flex; gap: 20px; width: 100%; max-width: 680px; margin: 20px 0; }
-        .shop-column { flex: 1; background: #1f2833; padding: 15px; border-radius: 8px; border: 1px solid #45a29e; height: 180px; overflow-y: auto; }
-        .shop-column h3 { font-size: 16px; margin-bottom: 12px; text-align: center; color: #66fcf1; text-transform: uppercase; border-bottom: 1px solid rgba(102,252,241,0.2); padding-bottom: 5px; }
-        .shop-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #0b0c10; margin-bottom: 8px; border-radius: 6px; font-size: 14px; }
+        .shop-box { display: flex; gap: 15px; width: 100%; max-width: 700px; margin: 15px 0; }
+        .shop-column { flex: 1; background: #1f2833; padding: 12px; border-radius: 8px; border: 1px solid #45a29e; height: 170px; overflow-y: auto; }
+        .shop-column h3 { font-size: 14px; margin-bottom: 10px; text-align: center; color: #66fcf1; text-transform: uppercase; border-bottom: 1px solid rgba(102,252,241,0.2); padding-bottom: 5px; }
+        .shop-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #0b0c10; margin-bottom: 6px; border-radius: 6px; font-size: 13px; }
         
-        .shop-item button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #45a29e; color: #fff; }
+        .shop-item button { padding: 5px 10px; font-size: 11px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #45a29e; color: #fff; }
         .shop-item button:hover { background: #66fcf1; color: #0b0c10; }
         .shop-item button.eq { background: #ff4757; color: #fff; }
         .shop-item button.own { background: #2ed573; color: #fff; }
 
-        #touch-controls { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 5; }
-        .control-group { display: flex; gap: 20px; }
-        .action-btn { width: 75px; height: 75px; border-radius: 50%; background: rgba(31, 40, 51, 0.85); border: 2px solid #45a29e; color: #66fcf1; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; text-transform: uppercase; }
+        #touch-controls { position: absolute; bottom: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; z-index: 5; }
+        .control-group { display: flex; gap: 15px; }
+        .action-btn { width: 70px; height: 70px; border-radius: 50%; background: rgba(31, 40, 51, 0.85); border: 2px solid #45a29e; color: #66fcf1; font-size: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; text-transform: uppercase; touch-action: manipulation; }
         .action-btn:active { background: #66fcf1; color: #0b0c10; }
         #btn-attack { border-color: #ff4757; color: #ff4757; }
         #btn-attack:active { background: #ff4757; color: #fff; }
     </style>
+    
+    <!-- КРИТИЧЕСКИЙ СКРИПТ: Загружается ПЕРВЫМ, чтобы функции гарантированно существовали в памяти -->
+    <script>
+        window.gameActive = false;
+        window.distanceScore = 0;
+        window.coinBalance = parseInt(localStorage.getItem('parkour_coins')) || 0;
+        window.selectedSkin = localStorage.getItem('parkour_skin') || 'classic';
+        window.selectedWeapon = localStorage.getItem('parkour_weapon') || 'none';
+
+        window.triggerStart = function() {
+            const menu = document.getElementById('screen-menu');
+            const over = document.getElementById('screen-over');
+            if(menu) menu.classList.add('hidden');
+            if(over) over.classList.add('hidden');
+            
+            window.gameActive = true;
+            window.distanceScore = 0;
+            window.obstacles = [];
+            window.projectiles = [];
+            window.currentSpeed = 5.5;
+            window.stickman.y = window.roofHeight - window.stickman.h;
+            window.stickman.jumping = false;
+            window.stickman.sliding = false;
+            requestAnimationFrame(window.coreEngineLoop);
+        };
+
+        window.triggerResetMenu = function() {
+            document.getElementById('screen-over').classList.add('hidden');
+            document.getElementById('screen-menu').classList.remove('hidden');
+            window.syncShopUI();
+        };
+
+        window.executeJump = function() {
+            if (!window.stickman.jumping && !window.stickman.sliding && window.gameActive) {
+                window.stickman.vy = window.stickman.jForce;
+                window.stickman.jumping = true;
+                window.spawnDust(window.stickman.x + 15, window.roofHeight, '#66fcf1');
+            }
+        };
+
+        window.executeSlide = function() {
+            if (!window.stickman.jumping && !window.stickman.sliding && window.gameActive) {
+                window.stickman.sliding = true;
+                window.stickman.h = 32;
+                window.stickman.y += 33;
+                window.stickman.slideFrames = 38;
+            }
+        };
+
+        window.executeAttack = function() {
+            if (window.stickman.attacking || !window.gameActive) return;
+            window.stickman.attacking = true;
+            window.stickman.attackFrames = 12;
+
+            let wepInfo = window.shopConfig.weapons.find(w => w.id === window.selectedWeapon);
+            if (wepInfo && wepInfo.type === 'range') {
+                window.projectiles.push({
+                    x: window.stickman.x + window.stickman.w,
+                    y: window.stickman.y + window.stickman.h / 2 - 2,
+                    speed: 14
+                });
+            }
+        };
+    </script>
 </head>
 <body>
 
@@ -52,7 +116,7 @@
         <!-- ГЛАВНОЕ МЕНЮ И МАГАЗИН -->
         <div id="screen-menu" class="screen">
             <h1>Stickman Roof Run</h1>
-            <div style="font-size: 18px; font-weight: bold;" class="hud-coins">Кошелек: <span id="shop-wallet">0</span> 🪙</div>
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;" class="hud-coins">Ваш кошелек: <span id="shop-wallet">0</span> 🪙</div>
             
             <div class="shop-box">
                 <div class="shop-column">
@@ -65,185 +129,76 @@
                 </div>
             </div>
 
-            <button id="btn-start" class="menu-btn" onclick="triggerStart()">Начать игру</button>
+            <button id="btn-start" class="menu-btn" onclick="window.triggerStart()">Начать игру</button>
         </div>
 
         <!-- ЭКРАН ПРОИГРЫША -->
         <div id="screen-over" class="screen hidden">
             <h1 style="color: #ff4757;">Забег окончен</h1>
-            <p id="over-stats" style="margin-bottom: 25px; font-size: 20px; color: #c1c8e4;"></p>
-            <button id="btn-restart" class="menu-btn" onclick="triggerResetMenu()">В меню</button>
+            <p id="over-stats" style="margin-bottom: 20px; font-size: 18px; color: #c1c8e4;"></p>
+            <button id="btn-restart" class="menu-btn" onclick="window.triggerResetMenu()">В меню</button>
         </div>
 
         <!-- КНОПКИ УПРАВЛЕНИЯ -->
         <div id="touch-controls">
             <div class="control-group">
-                <div class="action-btn" onclick="executeJump()">Вверх</div>
-                <div class="action-btn" onclick="executeSlide()">Подкат</div>
+                <div class="action-btn" onclick="window.executeJump()">Вверх</div>
+                <div class="action-btn" onclick="window.executeSlide()">Подкат</div>
             </div>
             <div class="control-group">
-                <div class="action-btn" id="btn-attack" onclick="executeAttack()">Атака</div>
+                <div class="action-btn" id="btn-attack" onclick="window.executeAttack()">Атака</div>
             </div>
         </div>
     </div>
 
 <script>
-// Глобальное объявление функций, чтобы Chrome видел их сразу
-window.triggerStart = function() {
-    document.getElementById('screen-menu').classList.add('hidden');
-    document.getElementById('screen-over').classList.add('hidden');
-    gameActive = true;
-    distanceScore = 0;
-    obstacles = [];
-    projectiles = [];
-    currentSpeed = 5.5;
-    stickman.y = roofHeight - stickman.h;
-    stickman.jumping = false;
-    stickman.sliding = false;
-    requestAnimationFrame(coreEngineLoop);
-};
-
-window.triggerResetMenu = function() {
-    document.getElementById('screen-over').classList.add('hidden');
-    document.getElementById('screen-menu').classList.remove('hidden');
-    syncShopUI();
-};
-
-window.executeJump = function() {
-    if (!stickman.jumping && !stickman.sliding && gameActive) {
-        stickman.vy = stickman.jForce;
-        stickman.jumping = true;
-    }
-};
-
-window.executeSlide = function() {
-    if (!stickman.jumping && !stickman.sliding && gameActive) {
-        stickman.sliding = true;
-        stickman.h = 32;
-        stickman.y += 33;
-        stickman.slideFrames = 38;
-    }
-};
-
-window.executeAttack = function() {
-    if (stickman.attacking || !gameActive) return;
-    stickman.attacking = true;
-    stickman.attackFrames = 12;
-
-    let wepInfo = shopConfig.weapons.find(w => w.id === selectedWeapon);
-    if (wepInfo && wepInfo.type === 'range') {
-        projectiles.push({
-            x: stickman.x + stickman.w,
-            y: stickman.y + stickman.h / 2 - 2,
-            speed: 14
-        });
-    }
-};
-
-window.buyOrEquipItem = function(type, id) {
-    if (type === 'skin') {
-        let item = shopConfig.skins.find(s => s.id === id);
-        if (shopConfig.unlockedSkins.includes(id)) {
-            selectedSkin = id;
-        } else if (coinBalance >= item.price) {
-            coinBalance -= item.price;
-            shopConfig.unlockedSkins.push(id);
-            selectedSkin = id;
-        }
-    } else if (type === 'weapon') {
-        let item = shopConfig.weapons.find(w => w.id === id);
-        if (shopConfig.unlockedWeapons.includes(id)) {
-            selectedWeapon = id;
-        } else if (coinBalance >= item.price) {
-            coinBalance -= item.price;
-            shopConfig.unlockedWeapons.push(id);
-            selectedWeapon = id;
-        }
-    }
-    syncShopUI();
-};
-
+// Основной движок игры
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-let gameActive = false;
-let distanceScore = 0;
-let coinBalance = 200; 
-let selectedSkin = 'classic';
-let selectedWeapon = 'none';
-
-const shopConfig = {
+window.shopConfig = {
     skins: [
         { id: 'classic', name: 'Обычный', price: 0, color: '#ffffff' },
-        { id: 'phantom', name: 'Фантом', price: 40, color: '#ff4757' },
-        { id: 'cyber', name: 'Кибер', price: 80, color: '#00d2d3' },
-        { id: 'elite', name: 'Легенда', price: 150, color: '#ffa502' }
+        { id: 'phantom', name: 'Фантом', price: 30, color: '#ff4757' },
+        { id: 'cyber', name: 'Кибер Неон', price: 60, color: '#00d2d3' },
+        { id: 'elite', name: 'Золотой', price: 120, color: '#ffa502' }
     ],
     weapons: [
         { id: 'none', name: 'Кулаки', price: 0, type: 'melee' },
-        { id: 'sword', name: 'Меч самурая', price: 35, type: 'melee' },
-        { id: 'blaster', name: 'Бластер', price: 90, type: 'range' }
+        { id: 'sword', name: 'Катана', price: 25, type: 'melee' },
+        { id: 'blaster', name: 'Лазер', price: 70, type: 'range' }
     ],
-    unlockedSkins: ['classic'],
-    unlockedWeapons: ['none']
+    unlockedSkins: JSON.parse(localStorage.getItem('parkour_unlocked_skins')) || ['classic'],
+    unlockedWeapons: JSON.parse(localStorage.getItem('parkour_unlocked_weapons')) || ['none']
 };
 
-let stickman = {
+window.stickman = {
     x: 120, y: 240, w: 30, h: 65,
     vy: 0, g: 0.65, jForce: -13.5,
     jumping: false, sliding: false, slideFrames: 0,
     attacking: false, attackFrames: 0
 };
 
-let obstacles = [];
-let projectiles = [];
-let VFXParticles = [];
-let currentSpeed = 5.5;
-let spawnCooldown = 0;
-let roofHeight = 310;
+window.obstacles = [];
+window.projectiles = [];
+window.VFXParticles = [];
+window.currentSpeed = 5.5;
+window.spawnCooldown = 0;
+window.roofHeight = 310;
 
 function renderEnvironment() {
     let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    skyGrad.addColorStop(0, '#0f0c20');
-    skyGrad.addColorStop(1, '#151930');
+    skyGrad.addColorStop(0, '#0a0813');
+    skyGrad.addColorStop(1, '#121324');
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#1b1f38';
-    ctx.fillRect(80, 130, 140, 270);
-    ctx.fillRect(320, 90, 210, 310);
-    ctx.fillRect(610, 160, 130, 240);
+    // Здания на фоне с улучшенными неоновыми окнами
+    ctx.fillStyle = '#161829';
+    ctx.fillRect(60, 110, 150, 290);
+    ctx.fillRect(300, 80, 220, 320);
+    ctx.fillRect(620, 140, 140, 260);
 
-    ctx.fillStyle = '#242b4d';
-    ctx.fillRect(0, roofHeight, canvas.width, canvas.height - roofHeight);
-    
-    ctx.fillStyle = '#66fcf1';
-    ctx.fillRect(0, roofHeight, canvas.width, 4);
-}
-
-function processPlayerPhysics() {
-    if (stickman.sliding) {
-        stickman.slideFrames--;
-        if (stickman.slideFrames <= 0) {
-            stickman.sliding = false;
-            stickman.h = 65;
-            stickman.y -= 33;
-        }
-    } else {
-        stickman.vy += stickman.g;
-        stickman.y += stickman.vy;
-        
-        if (stickman.y >= roofHeight - stickman.h) {
-            stickman.y = roofHeight - stickman.h;
-            stickman.vy = 0;
-            stickman.jumping = false;
-        }
-    }
-
-    if (stickman.attacking) {
-        stickman.attackFrames--;
-        if (stickman.attackFrames <= 0) stickman.attacking = false;
-    }
-}
-
-function drawStickman() {
+    ctx.fillStyle = 'rgba(102, 252, 241, 0.2)';
+    ctx.fillRect(90, 140, 20, 30);
+    ctx.fillRect(340, 120, 30, 40);
