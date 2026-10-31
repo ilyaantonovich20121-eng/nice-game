@@ -1,142 +1,162 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stickman Parkour: Overdrive 1000+ Edition</title>
-    <style>
-        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-        body { background: #03030a; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; color: #fff; }
-        #game-container { position: relative; width: 100vw; height: 100vh; max-width: 850px; max-height: 480px; background: #020205; border: 3px solid #1a1c2e; border-radius: 12px; overflow: hidden; box-shadow: 0 0 40px rgba(0, 255, 242, 0.15); }
-        canvas { display: block; width: 100%; height: 100%; }
-        .hud-panel { position: absolute; top: 12px; left: 15px; right: 15px; display: flex; justify-content: space-between; pointer-events: none; font-size: 16px; font-weight: bold; font-family: monospace; z-index: 5; text-shadow: 2px 2px 3px #000; }
-        .hud-coins { color: #00ffff; }
-        .game-screen { position: absolute; inset: 0; background: rgba(5, 6, 15, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 20px; overflow-y: auto; }
-        .hidden { display: none !important; }
-        h1 { font-size: 32px; color: #00ffff; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,255,242,0.4); text-align: center; margin-bottom: 2px; }
-        .sub { font-size: 11px; color: #45a29e; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
-        .menu-btn { padding: 12px 30px; font-size: 16px; font-weight: bold; background: linear-gradient(45deg, #00ffff, #45a29e); border: none; border-radius: 6px; cursor: pointer; color: #05060f; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0, 255, 242, 0.3); margin: 6px; transition: transform 0.1s; }
-        .menu-btn:active { transform: scale(0.95); }
-        .shop-wrapper { display: flex; gap: 15px; width: 100%; max-width: 720px; margin-bottom: 12px; }
-        .shop-column { flex: 1; background: #0b0c16; padding: 10px; border-radius: 8px; border: 1px solid #1f2833; height: 160px; overflow-y: auto; }
-        .shop-column h3 { font-size: 12px; margin-bottom: 8px; text-align: center; color: #00ffff; text-transform: uppercase; border-bottom: 1px solid rgba(0,255,242,0.2); padding-bottom: 4px; }
-        .shop-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #020205; margin-bottom: 5px; border-radius: 6px; font-size: 12px; }
-        .shop-item button { padding: 5px 10px; font-size: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; background: #1f2833; color: #fff; }
-        .shop-item button.eq { background: #ff4757; }
-        .shop-item button.own { background: #2ed573; }
-        .levels-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 500px; margin-bottom: 15px; }
-        .lvl-btn { background: #111424; border: 2px solid #1f2833; border-radius: 8px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .lvl-btn.unlocked { border-color: #00ffff; color: #00ffff; }
-        .lvl-btn.active-lvl { background: #00ffff; color: #05060f; border-color: #00ffff; }
-        .lvl-stars { font-size: 8px; color: #ffd700; margin-top: 2px; }
-        .settings-box { width: 100%; max-width: 400px; background: #0b0c16; padding: 15px; border-radius: 8px; border: 1px solid #1f2833; margin-bottom: 15px; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; }
-        .setting-row select { background: #111424; color: #fff; border: 1px solid #45a29e; padding: 4px 8px; border-radius: 4px; }
-        #input-pad { position: absolute; bottom: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; z-index: 5; pointer-events: none; }
-        .pad-group { display: flex; gap: 15px; pointer-events: auto; }
-        .pad-btn { width: 68px; height: 68px; border-radius: 50%; background: rgba(11, 12, 22, 0.85); border: 2.5px solid #45a29e; color: #00ffff; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; text-transform: uppercase; touch-action: manipulation; }
-        .pad-btn:active { background: #00ffff; color: #05060f; }
-        #btn-attack { border-color: #ff4757; color: #ff4757; }
-        #btn-attack:active { background: #ff4757; color: #fff; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mobile Shooter</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body, html { width: 100%; height: 100%; overflow: hidden; background: #0a1218; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; touch-action: manipulation; }
+  #gameCanvas { display: block; width: 100vw; height: 100vh; }
+
+  /* HUD */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; display: none; }
+  .top-bar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.7); padding: 6px 16px; border-radius: 30px; border: 1px solid rgba(0,255,200,0.4); }
+  .stat { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; }
+  .hp-val { color: #4dff88; } .ammo-val { color: #ffd34d; } .coins-val { color: #ffd34d; } .wave-val { color: #ff6b6b; }
+  #hpbar-wrap { position: absolute; top: 48px; left: 50%; transform: translateX(-50%); width: 150px; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; }
+  #hpbar { height: 100%; width: 100%; background: #4dff88; transition: width 0.1s; }
+
+  /* Сенсорное управление */
+  #joystick-zone { position: absolute; bottom: 25px; left: 25px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(0,255,200,0.5); pointer-events: auto; touch-action: none; }
+  #joystick-knob { position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #0ff, #007a7a); box-shadow: 0 0 15px rgba(0,255,255,0.7); pointer-events: none; }
+  
+  #fire-btn { position: absolute; bottom: 35px; right: 30px; width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff6b6b, #b30000); border: 3px solid rgba(255,150,150,0.8); display: flex; align-items: center; justify-content: center; font-size: 32px; pointer-events: auto; touch-action: none; }
+  #fire-btn:active { transform: scale(0.9); background: #ff2222; }
+  
+  #reload-btn { position: absolute; bottom: 145px; right: 45px; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,210,80,0.2); border: 3px solid rgba(255,210,80,0.8); display: flex; align-items: center; justify-content: center; font-size: 26px; pointer-events: auto; touch-action: manipulation; }
+
+  #menu-buttons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .mbtn { pointer-events: auto; width: 50px; height: 50px; border-radius: 12px; background: rgba(0,0,0,0.7); border: 2px solid rgba(0,255,200,0.5); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; touch-action: manipulation; }
+  .mbtn:active { background: rgba(0,255,200,0.3); }
+
+  /* Оверлеи */
+  .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(4,10,14,0.95); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
+  .overlay.active { display: flex; }
+  .panel { width: 100%; max-width: 500px; background: linear-gradient(160deg, #0e1a22, #0a1218); border: 1px solid rgba(0,255,200,0.4); border-radius: 16px; padding: 20px; max-height: 90vh; overflow-y: auto; touch-action: pan-y; }
+  .panel h2 { font-size: 22px; margin-bottom: 10px; color: #0ff; text-align: center; }
+  
+  /* Кнопки */
+  .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; background: linear-gradient(90deg, #003d33, #006655); border: 1px solid rgba(0,255,200,0.5); color: #fff; border-radius: 12px; font-size: 18px; font-weight: 700; text-align: center; cursor: pointer; pointer-events: auto; text-decoration: none; border: none; outline: none; touch-action: manipulation; }
+  .btn:active { background: #008877; transform: scale(0.98); }
+  .btn.red { background: linear-gradient(90deg,#4a0d0d,#7a1414); border-color: rgba(255,80,80,0.6); }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .wcard { background: rgba(0,255,200,0.08); border: 1px solid rgba(0,255,200,0.3); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; pointer-events: auto; touch-action: manipulation; }
+  .wcard.equipped { border-color: #0ff; background: rgba(0,255,200,0.2); }
+  .wcard .wico { font-size: 32px; margin-bottom: 4px; }
+  .wcard .wname { font-size: 15px; font-weight: 700; }
+  .wcard .wstat { font-size: 12px; color: #8cb; margin-top: 2px; }
+  .wcard.locked { opacity: 0.5; }
+
+  .case-box { text-align: center; padding: 15px; border: 1px solid rgba(255,200,0,0.4); border-radius: 12px; background: rgba(255,200,0,0.08); margin-bottom: 12px; }
+  .case-ico { font-size: 50px; margin-bottom: 6px; }
+  
+  #case-reel { display: flex; gap: 8px; margin: 15px 0; overflow: hidden; height: 100px; position: relative; border-top: 2px solid rgba(0,255,200,0.5); border-bottom: 2px solid rgba(0,255,200,0.5); padding: 6px 0; align-items: center; }
+  #case-reel-inner { display: flex; gap: 8px; transition: transform 3.5s cubic-bezier(.15,.7,.25,1); }
+  .reel-item { flex: 0 0 80px; height: 80px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); font-size: 10px; font-weight: 700; }
+  .reel-item .ri-ico { font-size: 26px; }
+  .reel-pointer { position: absolute; top: 0; left: 50%; width: 2px; height: 100%; background: #0ff; box-shadow: 0 0 10px #0ff; transform: translateX(-50%); z-index: 2; }
+
+  #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px); background: rgba(0,0,0,0.9); border: 1px solid #0ff; color: #0ff; padding: 10px 20px; border-radius: 20px; font-weight: 700; font-size: 14px; opacity: 0; transition: .3s; z-index: 100; pointer-events: none; text-align: center; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="canvas" width="850" height="480"></canvas>
-        <div class="hud-panel">
-            <div id="hud-score">Дистанция: 0м / Цель: 200м</div>
-            <div id="hud-coins" class="hud-coins">Баланс: 0 🪙</div>
-        </div>
-        <div id="scr-menu" class="game-screen">
-            <h1>Stickman Overdrive</h1>
-            <div class="sub">Главы 1-10 • Кампания на выживание</div>
-            <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px;" class="hud-coins">Кошелек: <span id="val-wallet">0</span> 🪙</div>
-            <div class="shop-wrapper">
-                <div class="shop-column">
-                    <h3>Костюмы</h3>
-                    <div id="sh-skins"></div>
-                </div>
-                <div class="shop-column">
-                    <h3>Арсенал</h3>
-                    <div id="sh-weapons"></div>
-                </div>
-            </div>
-            <div class="levels-grid" id="maps-grid"></div>
-            <div>
-                <button class="menu-btn" id="m-start">В бой</button>
-                <button class="menu-btn" id="m-set" style="background: #1f2833; color: #fff; box-shadow: none;">Настройки</button>
-            </div>
-        </div>
-        <div id="scr-settings" class="game-screen hidden">
-            <h1>Настройки</h1>
-            <div class="sub">Конфигурация производительности</div>
-            <div class="settings-box">
-                <div class="setting-row">
-                    <label>Сложность геймплея</label>
-                    <select id="set-diff">
-                        <option value="1">Легко (Прогулка)</option>
-                        <option value="2" selected>Нормально (Паркур)</option>
-                        <option value="3">Хардкор (Овердрайв)</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <label>Эффекты частиц (VFX)</label>
-                    <select id="set-vfx">
-                        <option value="on">Включены (Красиво)</option>
-                        <option value="off">Выключены (Для слабых тел)</option>
-                    </select>
-                </div>
-            </div>
-            <button class="menu-btn" id="set-back">Назад</button>
-        </div>
-        <div id="scr-over" class="game-screen hidden">
-            <h1 id="over-title" style="color: #ff4757;">Забег прерван</h1>
-            <p id="over-desc" style="margin-bottom: 15px; font-size: 16px; color: #c1c8e4; font-family: monospace; text-align: center;"></p>
-            <div>
-                <button class="menu-btn" id="o-retry">Повторить</button>
-                <button class="menu-btn" id="o-lobby" style="background: #1f2833; color: #fff; box-shadow: none;">Карта глав</button>
-            </div>
-        </div>
-        <div id="input-pad">
-            <div class="pad-group">
-                <div class="pad-btn" id="g-jump">Вверх</div>
-                <div class="pad-btn" id="g-slide">Подкат</div>
-            </div>
-            <div class="pad-group">
-                <div class="pad-btn" id="g-attack">Атака</div>
-            </div>
-        </div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="hud">
+  <div class="top-bar">
+    <div class="stat">❤️ <span class="hp-val" id="hp-val">100</span></div>
+    <div class="stat">🔫 <span class="ammo-val" id="ammo-val">12/12</span></div>
+    <div class="stat">🪙 <span class="coins-val" id="hud-coins">0</span></div>
+    <div class="stat">🌊 <span class="wave-val" id="wave-val">0/0</span></div>
+  </div>
+  <div id="hpbar-wrap"><div id="hpbar"></div></div>
+
+  <div id="menu-buttons">
+    <div class="mbtn" onclick="Game.openInventory()">🎒</div>
+    <div class="mbtn" onclick="Game.openCases()">📦</div>
+    <div class="mbtn" onclick="Game.pauseGame()">⏸️</div>
+  </div>
+
+  <div id="joystick-zone"><div id="joystick-knob"></div></div>
+  <div id="fire-btn">🔥</div>
+  <div id="reload-btn" onclick="Game.reload()">🔄</div>
+</div>
+
+<div id="toast"></div>
+
+<!-- СТАРТОВЫЙ ЭКРАН -->
+<div class="overlay active" id="start-overlay">
+  <div class="panel" style="text-align:center">
+    <h2 style="font-size:26px">⚡ МОБИЛЬНЫЙ ШУТЕР</h2>
+    
+    <button class="btn" onclick="Game.startFirstMatch()" style="background:#00b377;color:#000;font-size:18px">▶ НАЧАТЬ ИГРУ</button>
+    <button class="btn" onclick="Game.openCases()">📦 КЕЙСЫ</button>
+    <button class="btn" onclick="Game.openInventory()">🎒 ИНВЕНТАРЬ</button>
+  </div>
+</div>
+
+<!-- ИНВЕНТАРЬ -->
+<div class="overlay" id="inventory-overlay">
+  <div class="panel">
+    <h2>🎒 ИНВЕНТАРЬ</h2>
+    <div class="grid" id="inventory-grid"></div>
+    <div style="height:12px"></div>
+    <button class="btn red" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<!-- КЕЙСЫ -->
+<div class="overlay" id="cases-overlay">
+  <div class="panel">
+    <h2>📦 КЕЙСЫ</h2>
+    <p style="text-align:center;margin-bottom:15px;font-size:14px">Баланс: <b id="coins-val" style="color:#ffd34d;font-size:18px">0</b> 🪙</p>
+    <div class="case-box">
+      <div class="case-ico">📦</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">Обычный кейс</div>
+      <button class="btn" onclick="Game.openCase('common')">ОТКРЫТЬ — 100 🪙</button>
     </div>
+    <div class="case-box" style="border-color:rgba(181,107,255,0.5);background:rgba(181,107,255,0.1)">
+      <div class="case-ico">🎁</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px">Эпический кейс</div>
+      <button class="btn" onclick="Game.openCase('epic')" style="background:#5c2a8a">ОТКРЫТЬ — 300 🪙</button>
+    </div>
+    <div id="case-reel" style="display:none">
+      <div class="reel-pointer"></div>
+      <div id="case-reel-inner"></div>
+    </div>
+    <button class="btn red" onclick="Game.closeAll()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<!-- СМЕРТЬ -->
+<div class="overlay" id="gameover-overlay">
+  <div class="panel" style="text-align:center">
+    <h2 id="go-title">☠️ ВЫ ПОГИБЛИ</h2>
+    <div style="font-size:40px;font-weight:800;color:#0ff;margin:10px 0" id="final-score">0</div>
+    <div style="font-size:15px;margin-bottom:15px;color:#ffd34d">Награда: <b id="reward-val">0</b> 🪙</div>
+    <button class="btn" onclick="Game.restartMatch()">ИГРАТЬ СНОВА</button>
+    <button class="btn red" onclick="Game.showMenu()">В МЕНЮ</button>
+  </div>
+</div>
+
+<!-- ПАУЗА -->
+<div class="overlay" id="pause-overlay">
+  <div class="panel" style="max-width:350px;text-align:center">
+    <h2>⏸️ ПАУЗА</h2>
+    <button class="btn" onclick="Game.resume()">ПРОДОЛЖИТЬ</button>
+    <button class="btn red" onclick="Game.showMenu()">В МЕНЮ</button>
+  </div>
+</div>
+
 <script>
-window.onload = function() {
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const G = {
-        active: false, score: 0, coins: parseInt(localStorage.getItem('p_c')) || 500,
-        skin: localStorage.getItem('p_s') || 'c1', weapon: localStorage.getItem('p_w') || 'w1',
-        level: parseInt(localStorage.getItem('p_cl')) || 1, speed: 5, spawn: 0,
-        diff: parseInt(localStorage.getItem('p_df')) || 2, vfx: localStorage.getItem('p_vx') || 'on',
-        far: 0, near: 0, target: 200, name: ''
-    };
-    const Db = {
-        skins: [
-            { id: 'c1', name: 'Классик', price: 0, color: '#ffffff' },
-            { id: 'c2', name: 'Фантом', price: 60, color: '#ff4757' },
-            { id: 'c3', name: 'Неон Кибер', price: 120, color: '#00ffff' },
-            { id: 'c4', name: 'Император', price: 300, color: '#ffa502' }
-        ],
-        weapons: [
-            { id: 'w1', name: 'Кулаки', price: 0, type: 'm', r: 40 },
-            { id: 'w2', name: 'Катана', price: 50, type: 'm', r: 75 },
-            { id: 'w3', name: 'Лазер-Ган', price: 140, type: 'r' }
-        ],
-        maps: [
-            { id: 1, name: 'Крыши Минска', target: 200, speed: 5.5, color: '#161829' },
-            { id: 2, name: 'Неоновый Токио', target: 350, speed: 6.2, color: '#1f1430' },
-            { id: 3, name: 'Ночной Берлин', target: 500, speed: 6.8, color: '#0f1c24' },
-            { id: 4, name: 'Трущобы Кибера', target: 700, speed: 7.4, color: '#1a2416' },
-            { id: 5, name: 'Огни Дубая', target: 900, speed: 8.0, color: '#2b2111' },
-            { id: 6, name: 'Фабрика Роботов', target: 1100, speed: 8.5, color: '#242424' },
-            { id: 7, name: 'Секретная Лаборатория', target: 1300, speed: 9.0, color: '#112920' },
-            { id: 8, name: 'Логово Хакерв', target: 1600, speed: 9.5, color: '#2b0b14' },
-            { id: 9, name: 'Орбитальная Станция', target: 2000, speed: 10.0, color: '#051829' },
+const Game = (() => {
+  'use strict';
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
